@@ -1,21 +1,23 @@
 <template>
   <div class="">
-    <div class="pane">THis is card</div>
+    <!-- <div class="pane">THis is card</div> -->
+    <BusinessCard />
   </div>
 </template>
 
 <script>
-import Vue from "vue";
-import debounce from "debounce";
-import bindow from "@/@common/utils/bindow";
+import BusinessCard from "./BusinessCard.vue"; 
 
 export default {
-  components: {},
+  name: "Home",
+  components: {
+    BusinessCard, 
+  },
   data() {
     return {};
   },
   mounted() {},
-  destroyed: function () {},
+  destroyed() {},
   methods: {},
 };
 </script>
