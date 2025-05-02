@@ -32,7 +32,7 @@ module.exports = AppConfig.extend({
       context: "/tuber",
       entry: "./src/main.js",
     },
-    "linq-card": {
+    "linq/card": {
       // entry: "./src/main.js",
       // template: "public/app-customer.html",
       // filename: "app-customer.html",

@@ -1,8 +1,8 @@
 import { BootRouter } from "@/@common";
 
 export default BootRouter.route({
-  app: "linq-card",
-  base: "/linq/card/",
+  app: "linq/card",
+  base: "/linq/card",
   routes: [
     {
       path: "/",
@@ -14,6 +14,11 @@ export default BootRouter.route({
       path: "/home",
       name: "HomePage",
       component: () => import("./Modules/Home.vue"),
+    },
+    {
+      path: "/@/v/:verificationId/m/:membershipId/card",
+      name: "Card",
+      component: () => import("./Modules/BusinessCard.vue"),
     },
   ],
 });
