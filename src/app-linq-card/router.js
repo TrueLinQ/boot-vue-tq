@@ -1,8 +1,8 @@
 import { BootRouter } from "@/@common";
 
 export default BootRouter.route({
-  app: "scriptus",
-  base: "/scriptus/",
+  app: "linq-card",
+  base: "/linq/card/",
   routes: [
     {
       path: "/",
@@ -13,7 +13,7 @@ export default BootRouter.route({
     {
       path: "/home",
       name: "HomePage",
-      component: () => import("./Modules/ChatHome.vue"),
+      component: () => import("./Modules/Home.vue"),
     },
   ],
 });
