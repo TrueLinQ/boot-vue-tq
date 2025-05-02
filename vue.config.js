@@ -18,7 +18,7 @@ module.exports = {
   configureWebpack: (config) => {
     // Set output filename format
     //config.output = config.output || {};
-    ///config.output.filename = "app-[name].js";
+   // config.output.filename = "app-[name].js";
 
     // Add Webpack alias for `@app`
     config.resolve = config.resolve || {};

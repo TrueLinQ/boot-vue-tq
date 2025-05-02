@@ -10,6 +10,8 @@ import appConfig from "./app.config.js";
 Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 
+console.log("AppConfig", appConfig);
+
 new BootLoader(appConfig)
   .modules({
   })
