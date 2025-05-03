@@ -614,4 +614,45 @@ export default {
 .color-purple {
   background-color: #9b59b6;
 }
+/* flip issue fix */
+.card-container {
+  perspective: 1000px;
+}
+
+.card {
+  /* width: 300px;
+  height: 200px; */
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  -webkit-transform-style: preserve-3d; /* For older Chrome/Safari */
+  -webkit-transition: -webkit-transform 0.6s; /* Old WebKit support */
+}
+
+.card.is-flipped {
+  transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg); /* Old Chrome */
+
+}
+
+.card .front,
+.card .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  top: 0;
+  left: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -moz-backface-visibility: hidden; /* Helps older Firefox versions */
+  transform: rotateY(0deg); /* Reset before rotation to ensure visibility */
+  -webkit-transform: rotateY(0deg); /* Needed for proper rendering */
+}
+
+.card .back {
+  transform: rotateY(180deg);
+}
+
+
 </style>
