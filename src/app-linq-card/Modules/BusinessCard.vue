@@ -1,80 +1,68 @@
-// BusinessCard.vue
 <template>
   <div class="root-container">
     <div class="business-card-root">
-      <!-- Controls container with color options -->
-      <div class="controls-container">
-        <div
-          v-for="color in colorOptions"
-          :key="color.name"
-          :class="['color-option', `color-${color.name}`, { active: activeColor === color.name }]"
-          :data-color="color.name"
-          @click="changeColor(color.name)"
-        ></div>
+      <div v-if="isLoading" class="loading-container">
+        <div class="loading">Loading...</div>
       </div>
-
-      <div class="card-container">
+      <div v-else-if="error" class="error-container">
+        <div class="error">{{ error }}</div>
+      </div>
+      <div v-else class="card-container">
         <div class="card" :class="{ flipped: isFlipped }" @click="flipCard">
           <div class="card-face front">
             <div class="brand-pattern"></div>
-            <!-- <div class="logo">CONAY</div> -->
             <div class="header-container">
               <div class="logo-box" id="frontLogoBox">
-                <!-- Logo placeholder - will be replaced with actual logo in the future -->
-                <span class="logo-placeholder">C</span>
+                <span v-if="!verificationData.picture" class="logo-placeholder">C</span>
+                <img v-else :src="verificationData.picture" alt="Logo" class="logo-image" />
               </div>
-              <div class="logo">CONAY</div>
+              <div class="logo">{{ companyName }}</div>
             </div>
 
-            <div class="section">
-              <div class="name">Alex Morgan</div>
-              <div class="title">Product Designer</div>
+            <div class="section" id="frontSection">
+              <div class="name">{{ userData.name }}</div>
+              <div class="title">{{ cardData.verification.title }}</div>
             </div>
 
             <div class="contact-info">
               <div class="label">Contact</div>
-              <div class="contact">alex@conay.design</div>
-              <div class="contact">+1 (555) 123-4567</div>
+              <div class="contact">{{ userData.profile.email }}</div>
+              <div class="contact" v-if="userData.profile.phone">{{ userData.profile.phone }}</div>
             </div>
 
             <div class="qr-container">
               <div class="qr-code">
-                <img src="/api/placeholder/70/70" alt="Contact QR Code" />
+                <qr-code
+                  :value="cardLink"
+                  :options="{
+                    size: 80,
+                    padding: 5,
+                  }"
+                ></qr-code>
               </div>
             </div>
 
             <div class="click-hint">Tap to flip</div>
-
-            <!-- <div class="action-icons">
-              <button class="icon-button download-btn" @click.stop="downloadCard">
-                <span class="icon">⬇️</span>
-              </button>
-              <button class="icon-button share-btn" @click.stop="shareCard">
-                <span class="icon">🔗</span>
-              </button>
-            </div> -->
           </div>
 
           <div class="card-face back">
             <div class="brand-pattern"></div>
-            <!-- <div class="logo">CONAY</div> -->
             <div class="header-container">
               <div class="logo-box" id="frontLogoBox">
-                <!-- Logo placeholder - will be replaced with actual logo in the future -->
-                <span class="logo-placeholder">C</span>
+                <img v-if="verificationData.picture" :src="verificationData.picture" alt="Logo" class="logo-image" />
+                <span v-else class="logo-placeholder">C</span>
               </div>
-              <div class="logo">CONAY</div>
+              <div class="logo">{{ companyName }}</div>
             </div>
 
             <div class="section">
               <div class="label">Address</div>
-              <div class="contact">123 Design Avenue</div>
-              <div class="contact">San Francisco, CA 94107</div>
+              <div class="contact">{{ formattedAddress }}</div>
             </div>
 
-            <div class="section">
+            <div class="section" v-if="hasWebsite">
               <div class="label">Website</div>
-              <div class="contact">conay.design</div>
+              <div class="contact">{{ websiteFromEmail }}</div>
             </div>
 
             <div class="social-links">
@@ -85,87 +73,152 @@
 
             <div class="qr-container">
               <div class="qr-code">
-                <img src="/api/placeholder/70/70" alt="Website QR Code" />
+                <qr-code
+                  :value="vCardData"
+                  :options="{
+                    size: 80,
+                    padding: 5,
+                  }"
+                ></qr-code>
               </div>
             </div>
 
             <div class="click-hint">Tap to flip</div>
-
-            <!-- <div class="action-icons">
-              <button class="icon-button download-btn" @click.stop="downloadCard">
-                <span class="icon">⬇️</span>
-              </button>
-              <button class="icon-button share-btn" @click.stop="shareCard">
-                <span class="icon">🔗</span>
-              </button>
-            </div> -->
           </div>
         </div>
       </div>
-
-      <!-- Audio element for the flip sound -->
-      <!-- <audio ref="flipSound" src="./cflip.mp3"></audio> -->
     </div>
   </div>
 </template>
 
 <script>
+import apiService from "../services/CardApi.js";
+import QrCode from "./Qr.vue"; // Import the QrCode component
+
 export default {
   name: "BusinessCard",
+  components: {
+    QrCode, // Register the QrCode component
+  },
   data() {
     return {
       isFlipped: false,
-      activeColor: "gold",
-      colorOptions: [{ name: "gold" }, { name: "blue" }, { name: "green" }, { name: "red" }, { name: "purple" }],
-      themes: {
-        gold: {
-          primary: "#d4af37",
-          secondary: "#f2d272",
-          accent: "#b88a44",
-          primaryRgb: "212, 175, 55",
-          secondaryRgb: "242, 210, 114",
-          accentRgb: "184, 138, 68",
-        },
-        blue: {
-          primary: "#3498db",
-          secondary: "#85c1e9",
-          accent: "#2874a6",
-          primaryRgb: "52, 152, 219",
-          secondaryRgb: "133, 193, 233",
-          accentRgb: "40, 116, 166",
-        },
-        green: {
-          primary: "#27ae60",
-          secondary: "#82e0aa",
-          accent: "#196f3d",
-          primaryRgb: "39, 174, 96",
-          secondaryRgb: "130, 224, 170",
-          accentRgb: "25, 111, 61",
-        },
-        red: {
-          primary: "#e74c3c",
-          secondary: "#f5b7b1",
-          accent: "#943126",
-          primaryRgb: "231, 76, 60",
-          secondaryRgb: "245, 183, 177",
-          accentRgb: "148, 49, 38",
-        },
-        purple: {
-          primary: "#9b59b6",
-          secondary: "#d7bde2",
-          accent: "#6c3483",
-          primaryRgb: "155, 89, 182",
-          secondaryRgb: "215, 189, 226",
-          accentRgb: "108, 52, 131",
-        },
-      },
+      isLoading: true,
+      cardData: null,
+      error: null,
+      verificationId: "6809187bd62b6702f00d00e6",
+      membershipId: "680918f0d62b6702f00d00eb",
+      vCardData: "", // vCard data for QR code
     };
   },
+  created() {
+    if (this.$route.params.verificationId && this.$route.params.membershipId) {
+      this.verificationId = this.$route.params.verificationId;
+      this.membershipId = this.$route.params.membershipId;
+    }
+    this.fetchCardData();
+    this.loadVCard(); // Load vCard data for QR code
+  },
   mounted() {
-    // Apply default theme on mount
-    this.applyTheme(this.activeColor);
+    // Theme will be applied after data is loaded
+  },
+  computed: {
+    userData() {
+      if (!this.cardData || !this.cardData.user) {
+        return {
+          name: "Loading...",
+          profile: {
+            email: "",
+            phone: "",
+          },
+        };
+      }
+      return this.cardData.user;
+    },
+    verificationData() {
+      if (!this.cardData || !this.cardData.verification) {
+        return {
+          title: "",
+          description: "",
+          config: { scheme: "#d4af37" },
+        };
+      }
+      return this.cardData.verification;
+    },
+    companyName() {
+      // Extract company name from API or use default
+      return "CONAY";
+    },
+    // formattedAddress() {
+    //   if (!this.verificationData || !this.verificationData.description) {
+    //     return "No address available";
+    //   }
+
+    //   // Split the description into lines and return as address
+    //   const addressLines = this.verificationData.description.split('\n');
+    //   return addressLines;
+    // },
+
+    formattedAddress() {
+      if (!this.verificationData || !this.verificationData.description) {
+        return "No address available";
+      }
+      return this.verificationData.description; // Already a string with \n
+    },
+    websiteFromEmail() {
+      if (!this.userData || !this.userData.profile || !this.userData.profile.website) {
+        return "";
+      }
+      return this.userData.profile.website;
+    },
+    hasWebsite() {
+      return !!this.websiteFromEmail;
+    },
+    themeColor() {
+      // Get color from verification config or use default
+      return this.verificationData.config?.scheme || "#d4af37";
+    },
+    cardLink() {
+      // Generate public card link similar to second component
+      return `https://app.conay.com/card/${this.verificationId}/${this.membershipId}`;
+    },
   },
   methods: {
+    async fetchCardData() {
+      this.isLoading = true;
+      try {
+        // Use the API service
+        const response = await apiService.getCardData(this.verificationId, this.membershipId);
+
+        if (response && response.results && response.results.length > 0) {
+          this.cardData = response.results[0];
+          console.log("Card data fetched:", this.cardData);
+          this.applyThemeFromApi();
+        } else {
+          throw new Error("No card data found");
+        }
+      } catch (err) {
+        console.error("Error in component:", err);
+        this.error = err.message || "Failed to load card data";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async loadVCard() {
+      try {
+        // Similar approach to second component's vCard loading
+        const response = await apiService.getVCardData(this.verificationId, this.membershipId);
+        this.vCardData =
+          response ||
+          `BEGIN:VCARD\nVERSION:3.0\nN:${this.userData?.name || ""}\nEMAIL:${
+            this.userData?.profile?.email || ""
+          }\nTEL:${this.userData?.profile?.phone || ""}\nORG:${this.companyName}\nEND:VCARD`;
+      } catch (err) {
+        console.error("Error loading vCard data:", err);
+        // Fallback vCard data if API fails
+        this.vCardData = `BEGIN:VCARD\nVERSION:3.0\nN:${this.userData?.name || ""}\nEND:VCARD`;
+      }
+    },
     flipCard(e) {
       // Only flip if not clicking on a button
       if (!e.target.closest(".icon-button")) {
@@ -177,26 +230,89 @@ export default {
         }
       }
     },
-    downloadCard(e) {
-      e.stopPropagation();
-      alert("Download functionality would go here");
+    applyThemeFromApi() {
+      if (!this.cardData || !this.cardData.verification || !this.cardData.verification.config) {
+        return;
+      }
+
+      const colorScheme = this.cardData.verification.config.scheme;
+
+      if (!colorScheme) {
+        return;
+      }
+
+      // Apply the color scheme from API
+      const primaryColor = colorScheme;
+
+      // Generate lighter and darker versions for secondary and accent
+      const secondaryColor = this.lightenColor(primaryColor, 30);
+      const accentColor = this.darkenColor(primaryColor, 20);
+
+      // Convert hex to RGB for gradients
+      const primaryRgb = this.hexToRgb(primaryColor);
+      const secondaryRgb = this.hexToRgb(secondaryColor);
+      const accentRgb = this.hexToRgb(accentColor);
+
+      // Set CSS variables
+      document.documentElement.style.setProperty("--primary-color", primaryColor);
+      document.documentElement.style.setProperty("--secondary-color", secondaryColor);
+      document.documentElement.style.setProperty("--accent-color", accentColor);
+      document.documentElement.style.setProperty("--primary-color-rgb", primaryRgb);
+      document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
+      document.documentElement.style.setProperty("--accent-color-rgb", accentRgb);
     },
-    shareCard(e) {
-      e.stopPropagation();
-      alert("Share functionality would go here");
+    hexToRgb(hex) {
+      // Remove # if present
+      hex = hex.replace("#", "");
+
+      // Parse RGB components
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+
+      return `${r}, ${g}, ${b}`;
     },
-    changeColor(color) {
-      this.activeColor = color;
-      this.applyTheme(color);
+    lightenColor(hex, percent) {
+      // Convert hex to RGB
+      let r = parseInt(hex.substring(1, 3), 16);
+      let g = parseInt(hex.substring(3, 5), 16);
+      let b = parseInt(hex.substring(5, 7), 16);
+
+      // Lighten
+      r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
+      g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
+      b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
+
+      // Convert back to hex
+      return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
     },
-    applyTheme(color) {
-      const theme = this.themes[color];
-      document.documentElement.style.setProperty("--primary-color", theme.primary);
-      document.documentElement.style.setProperty("--secondary-color", theme.secondary);
-      document.documentElement.style.setProperty("--accent-color", theme.accent);
-      document.documentElement.style.setProperty("--primary-color-rgb", theme.primaryRgb);
-      document.documentElement.style.setProperty("--secondary-color-rgb", theme.secondaryRgb);
-      document.documentElement.style.setProperty("--accent-color-rgb", theme.accentRgb);
+    darkenColor(hex, percent) {
+      // Convert hex to RGB
+      let r = parseInt(hex.substring(1, 3), 16);
+      let g = parseInt(hex.substring(3, 5), 16);
+      let b = parseInt(hex.substring(5, 7), 16);
+
+      // Darken
+      r = Math.max(0, Math.floor(r * (1 - percent / 100)));
+      g = Math.max(0, Math.floor(g * (1 - percent / 100)));
+      b = Math.max(0, Math.floor(b * (1 - percent / 100)));
+
+      // Convert back to hex
+      return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    },
+    shareLink() {
+      if (navigator.share) {
+        navigator
+          .share({
+            title: this.userData.name,
+            text: "Digital Business Card",
+            url: this.cardLink,
+          })
+          .then(() => console.log("Successful share"))
+          .catch((error) => console.log("Error sharing", error));
+      } else {
+        console.log("Share not supported on this browser, do it the old way.");
+      }
     },
   },
 };
@@ -246,6 +362,30 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.loading-container,
+.error-container {
+  width: 288px;
+  height: 448px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--card-background);
+  border-radius: 16px;
+  color: var(--text-color);
+  padding: 20px;
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.error {
+  color: #e74c3c;
 }
 
 .card {
@@ -368,6 +508,15 @@ export default {
   z-index: 1;
 }
 
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 2;
+  position: relative;
+}
+
 /* Logo text styling */
 .logo {
   font-size: 18px;
@@ -438,13 +587,14 @@ export default {
 .qr-container {
   display: flex;
   justify-content: center;
-  margin: 15px 0;
+  margin: 8px 0 0 0;
   position: relative;
   z-index: 3;
 }
 
 .qr-code {
-  padding: 5px;
+  /* padding: 5px; */
+  padding-bottom: 4px;
   background-color: white;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -475,12 +625,16 @@ export default {
 }
 
 .section {
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   position: relative;
   z-index: 3;
   text-align: left;
   align-self: flex-start;
   width: 100%;
+}
+
+.section:last-child {
+  margin-bottom: 0;
 }
 
 .label {
@@ -499,50 +653,11 @@ export default {
   text-align: left;
 }
 
-.action-icons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 5px;
-  position: relative;
-  z-index: 3;
-}
-
-.icon-button {
-  width: 40px;
-  height: 40px;
-  background: none;
-  border: 1px solid #dddddd;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s;
-}
-
-.icon-button:hover {
-  background-color: rgba(0, 0, 0, 0.03);
-  border-color: var(--primary-color);
-}
-
-.icon {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  color: var(--primary-color);
-}
-
-.back {
-  transform: rotateY(180deg);
-}
-
 .social-links {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin: 15px 0;
+  margin: 8 0 0 0;
   padding: 10px;
   background: linear-gradient(to right, rgba(var(--primary-color-rgb), 0.1), transparent);
   border-radius: 30px;
@@ -560,68 +675,12 @@ export default {
   font-size: 12px;
 }
 
-/* Controls container */
-.controls-container {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  z-index: 100;
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-}
-
-.color-option {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform 0.2s, border-color 0.2s;
-}
-
-.color-option:hover {
-  transform: scale(1.1);
-}
-
-.color-option.active {
-  border-color: white;
-  box-shadow: 0 0 0 2px black;
-}
-
-/* Color options */
-.color-gold {
-  background-color: #d4af37;
-}
-
-.color-blue {
-  background-color: #3498db;
-}
-
-.color-green {
-  background-color: #27ae60;
-}
-
-.color-red {
-  background-color: #e74c3c;
-}
-
-.color-purple {
-  background-color: #9b59b6;
-}
-/* flip issue fix */
+/* fix for flip issues */
 .card-container {
   perspective: 1000px;
 }
 
 .card {
-  /* width: 300px;
-  height: 200px; */
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s;
@@ -632,7 +691,6 @@ export default {
 .card.is-flipped {
   transform: rotateY(180deg);
   -webkit-transform: rotateY(180deg); /* Old Chrome */
-
 }
 
 .card .front,
@@ -654,5 +712,15 @@ export default {
   transform: rotateY(180deg);
 }
 
+/* QR code specific styles */
+.qr-code canvas {
+  display: block;
+  margin: 0 auto;
+}
 
+.logo-placeholder {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
 </style>
