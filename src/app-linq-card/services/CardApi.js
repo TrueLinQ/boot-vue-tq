@@ -1,4 +1,6 @@
-const BASE_URL = 'https://app.truelinq.com/linq/pub/v1/verification/membership';
+// const BASE_URL = 'https://app.truelinq.com/linq/pub/v1/verification/membership';
+const BASE_URL = 'https://app.truelinq.com/linq/pub/v1/get/membership';
+
 
 export default {
   async getCardData(verificationId, membershipId) {

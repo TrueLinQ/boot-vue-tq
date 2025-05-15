@@ -8,26 +8,24 @@
         <div class="error">{{ error }}</div>
       </div>
       <div v-else class="card-container">
-        <div class="card" :class="{ flipped: isFlipped }" @click="flipCard">
+        <div class="card" :class="{ flipped: isFlipped }">
           <div class="card-face front">
-            <div class="brand-pattern"></div>
             <div class="header-container">
-              <div class="logo-box" id="frontLogoBox">
-                <span v-if="!verificationData.picture" class="logo-placeholder">C</span>
-                <img v-else :src="verificationData.picture" alt="Logo" class="logo-image" />
+              <div v-if="companyLogo" class="logo-box" id="frontLogoBox">
+                <img :src="companyLogo" alt="Logo" class="logo-image" />
               </div>
               <div class="logo">{{ companyName }}</div>
             </div>
 
             <div class="section" id="frontSection">
-              <div class="name">{{ userData.name }}</div>
-              <div class="title">{{ cardData.verification.title }}</div>
+              <div class="name">{{ cardData.name }}</div>
+              <div class="title">{{ cardData.jobRole || null }}</div>
             </div>
 
             <div class="contact-info">
               <div class="label">Contact</div>
-              <div class="contact">{{ userData.profile.email }}</div>
-              <div class="contact" v-if="userData.profile.phone">{{ userData.profile.phone }}</div>
+              <div class="contact">{{ cardData.email }}</div>
+              <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
             </div>
 
             <div class="qr-container">
@@ -35,40 +33,45 @@
                 <qr-code
                   :value="cardLink"
                   :options="{
-                    size: 80,
+                    size: 110,
                     padding: 5,
                   }"
                 ></qr-code>
               </div>
             </div>
 
-            <div class="click-hint">Tap to flip</div>
+            <div class="click-hint" @click="flipCard">Tap to flip</div>
           </div>
 
           <div class="card-face back">
-            <div class="brand-pattern"></div>
             <div class="header-container">
-              <div class="logo-box" id="frontLogoBox">
-                <img v-if="verificationData.picture" :src="verificationData.picture" alt="Logo" class="logo-image" />
-                <span v-else class="logo-placeholder">C</span>
+              <div v-if="companyLogo" class="logo-box" id="frontLogoBox">
+                <img :src="companyLogo" alt="Logo" class="logo-image" />
               </div>
               <div class="logo">{{ companyName }}</div>
             </div>
 
-            <div class="section">
+            <div class="section" v-if="cardData.address">
               <div class="label">Address</div>
-              <div class="contact">{{ formattedAddress }}</div>
+              <div class="contact">{{ cardData.address }}</div>
             </div>
 
-            <div class="section" v-if="hasWebsite">
+            <div class="section" v-if="website">
               <div class="label">Website</div>
-              <div class="contact">{{ websiteFromEmail }}</div>
+              <div class="contact">{{ website }}</div>
             </div>
 
             <div class="social-links">
-              <div class="social-icon">in</div>
-              <div class="social-icon">fb</div>
-              <div class="social-icon">tw</div>
+              <a
+                v-for="profile in activeSocialProfiles"
+                :key="profile.provider"
+                :href="profile.link"
+                target="_blank"
+                class="social-icon"
+                @click.stop="handleSocialClick(profile.link)"
+              >
+                {{ getSocialIcon(profile.provider) }}
+              </a>
             </div>
 
             <div class="qr-container">
@@ -76,14 +79,14 @@
                 <qr-code
                   :value="vCardData"
                   :options="{
-                    size: 80,
+                    size: 130,
                     padding: 5,
                   }"
                 ></qr-code>
               </div>
             </div>
 
-            <div class="click-hint">Tap to flip</div>
+            <div class="click-hint" @click="flipCard">Tap to flip</div>
           </div>
         </div>
       </div>
@@ -104,83 +107,54 @@ export default {
     return {
       isFlipped: false,
       isLoading: true,
-      cardData: null,
+      apiResponse: null,
       error: null,
-      verificationId: "6809187bd62b6702f00d00e6",
-      membershipId: "680918f0d62b6702f00d00eb",
+      cardId: "card-123", // This would come from your route or props
       vCardData: "", // vCard data for QR code
+      themeColor: "#d4af37", // Default theme color
+      verificationId: "68237e44d62b6702e7a54fae",
+      membershipId: "68237e44d62b6702e7a54faf",
     };
   },
   created() {
-    if (this.$route.params.verificationId && this.$route.params.membershipId) {
-      this.verificationId = this.$route.params.verificationId;
-      this.membershipId = this.$route.params.membershipId;
-    }
+    // if (this.$route.params.verificationId && this.$route.params.membershipId) {
+    //   this.verificationId = this.$route.params.verificationId;
+    //   this.membershipId = this.$route.params.membershipId;
+    // }
     this.fetchCardData();
-    this.loadVCard(); // Load vCard data for QR code
   },
   mounted() {
-    // Theme will be applied after data is loaded
+    // Apply theme colors once mounted
+    this.applyTheme();
   },
   computed: {
-    userData() {
-      if (!this.cardData || !this.cardData.user) {
+    cardData() {
+      if (!this.apiResponse || !this.apiResponse.results || !this.apiResponse.results[0]) {
         return {
           name: "Loading...",
-          profile: {
-            email: "",
-            phone: "",
-          },
+          email: "",
+          phone: "",
+          socialProfiles: [],
         };
       }
-      return this.cardData.user;
-    },
-    verificationData() {
-      if (!this.cardData || !this.cardData.verification) {
-        return {
-          title: "",
-          description: "",
-          config: { scheme: "#d4af37" },
-        };
-      }
-      return this.cardData.verification;
+      return this.apiResponse.results[0].cardData;
     },
     companyName() {
-      // Extract company name from API or use default
-      return "CONAY";
+      return this.cardData.company || "CONAY";
     },
-    // formattedAddress() {
-    //   if (!this.verificationData || !this.verificationData.description) {
-    //     return "No address available";
-    //   }
-
-    //   // Split the description into lines and return as address
-    //   const addressLines = this.verificationData.description.split('\n');
-    //   return addressLines;
-    // },
-
-    formattedAddress() {
-      if (!this.verificationData || !this.verificationData.description) {
-        return "No address available";
-      }
-      return this.verificationData.description; // Already a string with \n
+    companyLogo() {
+      return this.cardData.companyLogo || null;
     },
-    websiteFromEmail() {
-      if (!this.userData || !this.userData.profile || !this.userData.profile.website) {
-        return "";
-      }
-      return this.userData.profile.website;
-    },
-    hasWebsite() {
-      return !!this.websiteFromEmail;
-    },
-    themeColor() {
-      // Get color from verification config or use default
-      return this.verificationData.config?.scheme || "#d4af37";
+    website() {
+      return this.cardData.website || null;
     },
     cardLink() {
-      // Generate public card link similar to second component
-      return `https://app.conay.com/card/${this.verificationId}/${this.membershipId}`;
+      // Generate public card link
+      return `https://app.conay.com/card/${this.cardId}`;
+    },
+    activeSocialProfiles() {
+      // Return only social profiles that have a link
+      return (this.cardData.socialProfiles || []).filter((profile) => profile.link);
     },
   },
   methods: {
@@ -191,9 +165,9 @@ export default {
         const response = await apiService.getCardData(this.verificationId, this.membershipId);
 
         if (response && response.results && response.results.length > 0) {
-          this.cardData = response.results[0];
-          console.log("Card data fetched:", this.cardData);
-          this.applyThemeFromApi();
+          this.apiResponse = response; // Store the entire response
+          this.generateVCardData(); // Generate vCard after data is loaded
+          this.applyTheme();
         } else {
           throw new Error("No card data found");
         }
@@ -204,59 +178,35 @@ export default {
         this.isLoading = false;
       }
     },
-    async loadVCard() {
-      try {
-        // Similar approach to second component's vCard loading
-        const response = await apiService.getVCardData(this.verificationId, this.membershipId);
-        this.vCardData =
-          response ||
-          `BEGIN:VCARD\nVERSION:3.0\nN:${this.userData?.name || ""}\nEMAIL:${
-            this.userData?.profile?.email || ""
-          }\nTEL:${this.userData?.profile?.phone || ""}\nORG:${this.companyName}\nEND:VCARD`;
-      } catch (err) {
-        console.error("Error loading vCard data:", err);
-        // Fallback vCard data if API fails
-        this.vCardData = `BEGIN:VCARD\nVERSION:3.0\nN:${this.userData?.name || ""}\nEND:VCARD`;
-      }
+    generateVCardData() {
+      // Create a basic vCard format
+      const name = this.cardData.name || "";
+      const email = this.cardData.email || "";
+      const phone = this.cardData.phone || "";
+      const company = this.companyName || "";
+
+      this.vCardData = `BEGIN:VCARD
+VERSION:3.0
+FN:${name}
+ORG:${company}
+EMAIL:${email}
+TEL:${phone}
+END:VCARD`;
     },
-    flipCard(e) {
-      // Only flip if not clicking on a button
-      if (!e.target.closest(".icon-button")) {
-        this.isFlipped = !this.isFlipped;
-        // Play flip sound
-        if (this.$refs.flipSound) {
-          this.$refs.flipSound.currentTime = 0;
-          this.$refs.flipSound.play();
-        }
-      }
+    flipCard() {
+      this.isFlipped = !this.isFlipped;
     },
-    applyThemeFromApi() {
-      if (!this.cardData || !this.cardData.verification || !this.cardData.verification.config) {
-        return;
-      }
-
-      const colorScheme = this.cardData.verification.config.scheme;
-
-      if (!colorScheme) {
-        return;
-      }
-
-      // Apply the color scheme from API
-      const primaryColor = colorScheme;
-
-      // Generate lighter and darker versions for secondary and accent
-      const secondaryColor = this.lightenColor(primaryColor, 30);
-      const accentColor = this.darkenColor(primaryColor, 20);
+    applyTheme() {
+      // Set CSS variables for theme colors
+      document.documentElement.style.setProperty("--primary-color", this.themeColor);
+      document.documentElement.style.setProperty("--secondary-color", this.lightenColor(this.themeColor, 30));
+      document.documentElement.style.setProperty("--accent-color", this.darkenColor(this.themeColor, 20));
 
       // Convert hex to RGB for gradients
-      const primaryRgb = this.hexToRgb(primaryColor);
-      const secondaryRgb = this.hexToRgb(secondaryColor);
-      const accentRgb = this.hexToRgb(accentColor);
+      const primaryRgb = this.hexToRgb(this.themeColor);
+      const secondaryRgb = this.hexToRgb(this.lightenColor(this.themeColor, 30));
+      const accentRgb = this.hexToRgb(this.darkenColor(this.themeColor, 20));
 
-      // Set CSS variables
-      document.documentElement.style.setProperty("--primary-color", primaryColor);
-      document.documentElement.style.setProperty("--secondary-color", secondaryColor);
-      document.documentElement.style.setProperty("--accent-color", accentColor);
       document.documentElement.style.setProperty("--primary-color-rgb", primaryRgb);
       document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
       document.documentElement.style.setProperty("--accent-color-rgb", accentRgb);
@@ -300,18 +250,46 @@ export default {
       // Convert back to hex
       return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
     },
-    shareLink() {
+    getSocialIcon(provider) {
+      // Return simple icon text based on provider
+      const icons = {
+        linkedin: "in",
+        facebook: "fb",
+        twitter: "tw",
+        whatsapp: "wa",
+        instagram: "ig",
+        google: "g+",
+      };
+
+      return icons[provider] || provider.substring(0, 2);
+    },
+    // Add this method to your methods object
+    // Updated method with explicit event parameter
+    handleSocialClick(link, event) {
+      // Prevent the card from flipping when clicking social links
+      event.stopPropagation();
+
+      // Open the link in a new tab
+      window.open(link, "_blank", "noopener,noreferrer");
+
+      // Return false to prevent any default behavior
+      return false;
+    },
+    shareCard() {
       if (navigator.share) {
         navigator
           .share({
-            title: this.userData.name,
-            text: "Digital Business Card",
+            title: `${this.cardData.name}'s Business Card`,
+            text: `Check out ${this.cardData.name}'s digital business card`,
             url: this.cardLink,
           })
-          .then(() => console.log("Successful share"))
-          .catch((error) => console.log("Error sharing", error));
+          .catch((err) => console.error("Share failed:", err));
       } else {
-        console.log("Share not supported on this browser, do it the old way.");
+        // Fallback - copy link to clipboard
+        navigator.clipboard
+          .writeText(this.cardLink)
+          .then(() => alert("Card link copied to clipboard!"))
+          .catch((err) => console.error("Copy failed:", err));
       }
     },
   },
@@ -357,7 +335,6 @@ export default {
   width: 288px;
   height: 448px;
   perspective: 1500px;
-  cursor: pointer;
   position: relative;
   display: flex;
   justify-content: center;
@@ -420,6 +397,11 @@ export default {
   border-radius: 16px;
 }
 
+/* Back face rotation */
+.card-face.back {
+  transform: rotateY(180deg);
+}
+
 /* Corner accent design */
 .card-face::before {
   content: "";
@@ -428,43 +410,9 @@ export default {
   right: 0;
   width: 100px;
   height: 100px;
-  /* background: var(--primary-color); */
   opacity: 0.15;
   clip-path: polygon(100% 0, 0 0, 100% 100%);
   z-index: 1;
-}
-
-/* Side accent line */
-.card-face::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 4px;
-  /* background: linear-gradient(to bottom, 
-      var(--primary-color) 0%, 
-      var(--secondary-color) 50%,
-      var(--accent-color) 100%); */
-  z-index: 2;
-}
-
-.brand-pattern {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 120px;
-  height: 120px;
-  opacity: 0.07;
-  z-index: 0;
-  /* background-image: repeating-linear-gradient(
-      45deg,
-      var(--primary-color),
-      var(--primary-color) 2px,
-      transparent 2px,
-      transparent 10px
-  ); */
-  border-radius: 50%;
 }
 
 /* Header layout with logo and name */
@@ -480,12 +428,12 @@ export default {
 .logo-box {
   width: 48px;
   height: 48px;
-  background-color: var(--primary-color);
+  /* background-color: var(--primary-color); */
   border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.3);
+  /* box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.3); */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   margin-right: 15px;
   position: relative;
@@ -499,12 +447,12 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
+  /* background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.15) 0%,
     rgba(255, 255, 255, 0) 50%,
     rgba(0, 0, 0, 0.05) 100%
-  );
+  ); */
   z-index: 1;
 }
 
@@ -517,6 +465,9 @@ export default {
   position: relative;
 }
 
+#frontSection {
+  margin-bottom: 0;
+}
 /* Logo text styling */
 .logo {
   font-size: 18px;
@@ -593,7 +544,6 @@ export default {
 }
 
 .qr-code {
-  /* padding: 5px; */
   padding-bottom: 4px;
   background-color: white;
   border-radius: 8px;
@@ -622,15 +572,17 @@ export default {
   color: var(--text-color);
   position: relative;
   z-index: 3;
+  cursor: pointer;
+  padding: 5px 0;
 }
 
 .section {
-  /* margin-bottom: 20px; */
   position: relative;
   z-index: 3;
   text-align: left;
   align-self: flex-start;
   width: 100%;
+  margin-bottom: 20px;
 }
 
 .section:last-child {
@@ -657,15 +609,15 @@ export default {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin: 8 0 0 0;
+  margin: 8px 0;
   padding: 10px;
-  background: linear-gradient(to right, rgba(var(--primary-color-rgb), 0.1), transparent);
+  background: rgba(var(--primary-color-rgb), 0.1);
   border-radius: 30px;
 }
 
 .social-icon {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -673,51 +625,10 @@ export default {
   background-color: var(--primary-color);
   color: white;
   font-size: 12px;
+  text-decoration: none;
 }
 
-/* fix for flip issues */
-.card-container {
-  perspective: 1000px;
-}
-
-.card {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.6s;
-  -webkit-transform-style: preserve-3d; /* For older Chrome/Safari */
-  -webkit-transition: -webkit-transform 0.6s; /* Old WebKit support */
-}
-
-.card.is-flipped {
-  transform: rotateY(180deg);
-  -webkit-transform: rotateY(180deg); /* Old Chrome */
-}
-
-.card .front,
-.card .back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  top: 0;
-  left: 0;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -moz-backface-visibility: hidden; /* Helps older Firefox versions */
-  transform: rotateY(0deg); /* Reset before rotation to ensure visibility */
-  -webkit-transform: rotateY(0deg); /* Needed for proper rendering */
-}
-
-.card .back {
-  transform: rotateY(180deg);
-}
-
-/* QR code specific styles */
-.qr-code canvas {
-  display: block;
-  margin: 0 auto;
-}
-
+/* Logo placeholder styling */
 .logo-placeholder {
   font-size: 24px;
   font-weight: bold;
