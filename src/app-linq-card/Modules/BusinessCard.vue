@@ -111,16 +111,16 @@ export default {
       error: null,
       cardId: "card-123", // This would come from your route or props
       vCardData: "", // vCard data for QR code
-      themeColor: "#d4af37", // Default theme color
+      // themeColor: themeColorFromCard, // Default theme color
       verificationId: "68237e44d62b6702e7a54fae",
       membershipId: "68237e44d62b6702e7a54faf",
     };
   },
   created() {
-    // if (this.$route.params.verificationId && this.$route.params.membershipId) {
-    //   this.verificationId = this.$route.params.verificationId;
-    //   this.membershipId = this.$route.params.membershipId;
-    // }
+    if (this.$route.params.verificationId && this.$route.params.membershipId) {
+      this.verificationId = this.$route.params.verificationId;
+      this.membershipId = this.$route.params.membershipId;
+    }
     this.fetchCardData();
   },
   mounted() {
@@ -142,6 +142,11 @@ export default {
     companyName() {
       return this.cardData.company || "CONAY";
     },
+    themeColorFromCard() {
+      const theme = this.cardData.theme;
+      return theme && theme.toLowerCase() !== "alvia" ? theme : "#d4af37"; // Default color
+    },
+
     companyLogo() {
       return this.cardData.companyLogo || null;
     },
@@ -197,15 +202,17 @@ END:VCARD`;
       this.isFlipped = !this.isFlipped;
     },
     applyTheme() {
+      const theme = this.themeColorFromCard;
+
       // Set CSS variables for theme colors
-      document.documentElement.style.setProperty("--primary-color", this.themeColor);
-      document.documentElement.style.setProperty("--secondary-color", this.lightenColor(this.themeColor, 30));
-      document.documentElement.style.setProperty("--accent-color", this.darkenColor(this.themeColor, 20));
+      document.documentElement.style.setProperty("--primary-color", theme);
+      document.documentElement.style.setProperty("--secondary-color", this.lightenColor(theme, 30));
+      document.documentElement.style.setProperty("--accent-color", this.darkenColor(theme, 20));
 
       // Convert hex to RGB for gradients
-      const primaryRgb = this.hexToRgb(this.themeColor);
-      const secondaryRgb = this.hexToRgb(this.lightenColor(this.themeColor, 30));
-      const accentRgb = this.hexToRgb(this.darkenColor(this.themeColor, 20));
+      const primaryRgb = this.hexToRgb(theme);
+      const secondaryRgb = this.hexToRgb(this.lightenColor(theme, 30));
+      const accentRgb = this.hexToRgb(this.darkenColor(theme, 20));
 
       document.documentElement.style.setProperty("--primary-color-rgb", primaryRgb);
       document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
