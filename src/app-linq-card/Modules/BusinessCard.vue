@@ -23,13 +23,27 @@
                 <div class="title">{{ cardData.jobRole || null }}</div>
               </div>
 
-              <div class="contact-info">
+              <div class="contact-info" v-if="website">
+                <div class="label">Website</div>
+                <div class="contact">{{ website }}</div>
+              </div>
+              <div class="contact-info" id="frontWebsite">
                 <div class="label">Contact</div>
-                <div class="contact">{{ cardData.email }}</div>
                 <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
+                <div class="contact">{{ cardData.email }}</div>
+                <!-- <div class="contact">{{ website }}</div> -->
               </div>
 
-              <div class="qr-container">
+              <div class="social-links">
+                <div class="social-icon" @click.stop="saveCard">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="social-icon" @click.stop="shareCard">
+                  <i class="fas fa-external-link-alt"></i>
+                </div>
+              </div>
+
+              <!-- <div class="qr-container">
                 <div class="qr-code">
                   <qr-code
                     :value="cardLink"
@@ -39,7 +53,7 @@
                     }"
                   ></qr-code>
                 </div>
-              </div>
+              </div> -->
 
               <div class="click-hint" @click="flipCard">Tap to flip</div>
             </div>
@@ -57,17 +71,17 @@
                 <div class="contact">{{ cardData.address }}</div>
               </div>
 
-              <div class="section" v-if="website">
+              <!-- <div class="section" v-if="website">
                 <div class="label">Website</div>
                 <div class="contact">{{ website }}</div>
-              </div>
+              </div> -->
 
               <div class="social-links">
                 <div
                   v-for="profile in activeSocialProfiles"
                   :key="profile.provider"
                   class="social-icon"
-                  @click.stop="handleSocialClick(profile.link)"
+                  @click.stop="handleSocialClick(profile.link, $event)"
                 >
                   <i :class="getSocialIconClass(profile.provider)"></i>
                 </div>
@@ -119,10 +133,10 @@ export default {
     };
   },
   created() {
-    if (this.$route.params.verificationId && this.$route.params.membershipId) {
-      this.verificationId = this.$route.params.verificationId;
-      this.membershipId = this.$route.params.membershipId;
-    }
+    // if (this.$route.params.verificationId && this.$route.params.membershipId) {
+    //   this.verificationId = this.$route.params.verificationId;
+    //   this.membershipId = this.$route.params.membershipId;
+    // }
     this.fetchCardData();
   },
   mounted() {
@@ -157,7 +171,8 @@ export default {
     },
     cardLink() {
       // Generate public card link
-      return `https://app.conay.com/card/${this.cardId}`;
+      return `https://app.truelinq.com/linq/card/@/v/${this.verificationId}/m/${this.membershipId}/card`;
+      // https://app.truelinq.com/linq/card/@/v/682848fbd62b6748a85eff58/m/682848fbd62b6748a85eff59/card
     },
     activeSocialProfiles() {
       // Return only social profiles that have a link
@@ -191,12 +206,14 @@ export default {
       const email = this.cardData.email || "";
       const phone = this.cardData.phone || "";
       const company = this.companyName || "";
+      const title = this.cardData.jobRole || "";
 
       this.vCardData = `BEGIN:VCARD
 VERSION:3.0
 FN:${name}
 ORG:${company}
 EMAIL:${email}
+TITLE:${title}
 TEL:${phone}
 END:VCARD`;
     },
@@ -289,8 +306,18 @@ END:VCARD`;
       // Prevent the card from flipping when clicking social links
       event.stopPropagation();
 
-      // Open the link in a new tab
-      window.open(link, "_blank", "noopener,noreferrer");
+      // Check if the link is a phone number (simple check for numbers, +, -, and spaces)
+      const phoneRegex = /^[\d\s\+\-\(\)]+$/;
+
+      if (phoneRegex.test(link)) {
+        // Format as telephone URI - strip all non-digit characters
+        const cleanNumber = link.replace(/[^\d\+]/g, "");
+        // Open the phone app with the number
+        window.open(`tel:${cleanNumber}`, "_blank");
+      } else {
+        // For non-phone links, open as normal in a new tab
+        window.open(link, "_blank", "noopener,noreferrer");
+      }
 
       // Return false to prevent any default behavior
       return false;
@@ -311,6 +338,29 @@ END:VCARD`;
           .then(() => alert("Card link copied to clipboard!"))
           .catch((err) => console.error("Copy failed:", err));
       }
+    },
+
+    saveCard() {
+      // Create a Blob with the vCard data
+      const blob = new Blob([this.vCardData], { type: "text/vcard" });
+
+      // Create a URL for the Blob
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element to trigger the download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${this.cardData.name}.vcf`;
+
+      // Append to the document, click, and remove
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
     },
   },
 };
@@ -333,11 +383,46 @@ END:VCARD`;
   background: #000000;
 }
 
+#frontWebsite {
+  margin-top: 8px;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 8px 0;
+}
+
+.action-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.action-icon:hover {
+  transform: scale(1.1);
+  color: var(--secondary-color);
+}
+
+.action-icon i {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.action-text {
+  font-size: 10px;
+  font-weight: 500;
+}
+
 .card-wrapper {
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 0 1rem;
+  padding: 16px 1rem;
 }
 
 body {
@@ -387,12 +472,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  margin-top: -4rem;
+  margin-top: -9rem;
 }
 
 .loading-container,
 .error-container {
-  width: 288px;
+  width: 300px;
   height: 448px;
   display: flex;
   justify-content: center;
@@ -434,6 +519,7 @@ body {
   min-height: 100%;
   height: auto;
   backface-visibility: hidden;
+  transform: rotateY(0deg); /* Add explicit initial transform */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -701,7 +787,7 @@ body {
   align-items: center;
   width: 100%;
   height: 100%; */
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 /* Logo placeholder styling */
