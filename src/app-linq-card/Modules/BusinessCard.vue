@@ -1,92 +1,92 @@
 <template>
   <div class="root-container">
-    <div class="business-card-root">
-      <div v-if="isLoading" class="loading-container">
-        <div class="loading">Loading...</div>
-      </div>
-      <div v-else-if="error" class="error-container">
-        <div class="error">{{ error }}</div>
-      </div>
-      <div v-else class="card-container">
-        <div class="card" :class="{ flipped: isFlipped }">
-          <div class="card-face front">
-            <div class="header-container">
-              <div v-if="companyLogo" class="logo-box" id="frontLogoBox">
-                <img :src="companyLogo" alt="Logo" class="logo-image" />
+    <div class="card-wrapper">
+      <div class="business-card-root">
+        <div v-if="isLoading" class="loading-container">
+          <div class="loading">Loading...</div>
+        </div>
+        <div v-else-if="error" class="error-container">
+          <div class="error">{{ error }}</div>
+        </div>
+        <div v-else class="card-container">
+          <div class="cards" :class="{ flipped: isFlipped }">
+            <div class="card-face front">
+              <div class="header-container">
+                <div v-if="companyLogo" class="logo-box" id="frontLogoBox">
+                  <img :src="companyLogo" alt="Logo" class="logo-image" />
+                </div>
+                <div class="logo">{{ companyName }}</div>
               </div>
-              <div class="logo">{{ companyName }}</div>
-            </div>
 
-            <div class="section" id="frontSection">
-              <div class="name">{{ cardData.name }}</div>
-              <div class="title">{{ cardData.jobRole || null }}</div>
-            </div>
-
-            <div class="contact-info">
-              <div class="label">Contact</div>
-              <div class="contact">{{ cardData.email }}</div>
-              <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
-            </div>
-
-            <div class="qr-container">
-              <div class="qr-code">
-                <qr-code
-                  :value="cardLink"
-                  :options="{
-                    size: 110,
-                    padding: 5,
-                  }"
-                ></qr-code>
+              <div class="section" id="frontSection">
+                <div class="name">{{ cardData.name }}</div>
+                <div class="title">{{ cardData.jobRole || null }}</div>
               </div>
-            </div>
 
-            <div class="click-hint" @click="flipCard">Tap to flip</div>
-          </div>
-
-          <div class="card-face back">
-            <div class="header-container">
-              <div v-if="companyLogo" class="logo-box" id="frontLogoBox">
-                <img :src="companyLogo" alt="Logo" class="logo-image" />
+              <div class="contact-info">
+                <div class="label">Contact</div>
+                <div class="contact">{{ cardData.email }}</div>
+                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
               </div>
-              <div class="logo">{{ companyName }}</div>
-            </div>
 
-            <div class="section" v-if="cardData.address">
-              <div class="label">Address</div>
-              <div class="contact">{{ cardData.address }}</div>
-            </div>
-
-            <div class="section" v-if="website">
-              <div class="label">Website</div>
-              <div class="contact">{{ website }}</div>
-            </div>
-
-            <div class="social-links">
-              <a
-                v-for="profile in activeSocialProfiles"
-                :key="profile.provider"
-                :href="profile.link"
-                target="_blank"
-                class="social-icon"
-                @click.stop="handleSocialClick(profile.link)"
-              >
-                {{ getSocialIcon(profile.provider) }}
-              </a>
-            </div>
-
-            <div class="qr-container">
-              <div class="qr-code">
-                <qr-code
-                  :value="vCardData"
-                  :options="{
-                    size: 130,
-                    padding: 5,
-                  }"
-                ></qr-code>
+              <div class="qr-container">
+                <div class="qr-code">
+                  <qr-code
+                    :value="cardLink"
+                    :options="{
+                      size: 110,
+                      padding: 5,
+                    }"
+                  ></qr-code>
+                </div>
               </div>
+
+              <div class="click-hint" @click="flipCard">Tap to flip</div>
             </div>
 
-            <div class="click-hint" @click="flipCard">Tap to flip</div>
+            <div class="card-face back">
+              <div class="header-container">
+                <div v-if="companyLogo" class="logo-box" id="frontLogoBox">
+                  <img :src="companyLogo" alt="Logo" class="logo-image" />
+                </div>
+                <div class="logo">{{ companyName }}</div>
+              </div>
+
+              <div class="section" v-if="cardData.address">
+                <div class="label">Address</div>
+                <div class="contact">{{ cardData.address }}</div>
+              </div>
+
+              <div class="section" v-if="website">
+                <div class="label">Website</div>
+                <div class="contact">{{ website }}</div>
+              </div>
+
+              <div class="social-links">
+                <div
+                  v-for="profile in activeSocialProfiles"
+                  :key="profile.provider"
+                  class="social-icon"
+                  @click.stop="handleSocialClick(profile.link)"
+                >
+                  <i :class="getSocialIconClass(profile.provider)"></i>
+                </div>
+              </div>
+
+              <div class="qr-container">
+                <div class="qr-code">
+                  <qr-code
+                    :value="vCardData"
+                    :options="{
+                      size: 130,
+                      padding: 5,
+                    }"
+                  ></qr-code>
+                </div>
+              </div>
+
+              <div class="click-hint" @click="flipCard">Tap to flip</div>
+            </div>
           </div>
         </div>
       </div>
@@ -112,15 +112,17 @@ export default {
       cardId: "card-123", // This would come from your route or props
       vCardData: "", // vCard data for QR code
       // themeColor: themeColorFromCard, // Default theme color
-      verificationId: "68237e44d62b6702e7a54fae",
-      membershipId: "68237e44d62b6702e7a54faf",
+      // verificationId: "68237e44d62b6702e7a54fae",
+      // membershipId: "68237e44d62b6702e7a54faf",
+      verificationId: "682848fbd62b6748a85eff58",
+      membershipId: "682848fbd62b6748a85eff59",
     };
   },
   created() {
-    if (this.$route.params.verificationId && this.$route.params.membershipId) {
-      this.verificationId = this.$route.params.verificationId;
-      this.membershipId = this.$route.params.membershipId;
-    }
+    // if (this.$route.params.verificationId && this.$route.params.membershipId) {
+    //   this.verificationId = this.$route.params.verificationId;
+    //   this.membershipId = this.$route.params.membershipId;
+    // }
     this.fetchCardData();
   },
   mounted() {
@@ -257,22 +259,33 @@ END:VCARD`;
       // Convert back to hex
       return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
     },
-    getSocialIcon(provider) {
-      // Return simple icon text based on provider
+    getSocialIconClass(provider) {
       const icons = {
-        linkedin: "in",
-        facebook: "fb",
-        twitter: "tw",
-        whatsapp: "wa",
-        instagram: "ig",
-        google: "g+",
+        linkedin: "fab fa-linkedin-in",
+        facebook: "fab fa-facebook-f",
+        twitter: "fab fa-twitter",
+        whatsapp: "fab fa-whatsapp",
+        instagram: "fab fa-instagram",
+        google: "fab fa-google",
+        github: "fab fa-github",
+        youtube: "fab fa-youtube",
+        tiktok: "fab fa-tiktok",
+        pinterest: "fab fa-pinterest-p",
+        snapchat: "fab fa-snapchat-ghost",
+        reddit: "fab fa-reddit-alien",
+        discord: "fab fa-discord",
+        telegram: "fab fa-telegram-plane",
+        medium: "fab fa-medium-m",
+        behance: "fab fa-behance",
+        dribbble: "fab fa-dribbble",
+        mobile: "fas fa-phone",
       };
 
-      return icons[provider] || provider.substring(0, 2);
+      return icons[provider.toLowerCase()] || "fas fa-link";
     },
     // Add this method to your methods object
     // Updated method with explicit event parameter
-    handleSocialClick(link, event) {
+    handleSocialClick(link) {
       // Prevent the card from flipping when clicking social links
       event.stopPropagation();
 
@@ -312,8 +325,23 @@ END:VCARD`;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  /* min-height: 448px ;
+  max-height: max-content; */
+  min-height: 100vh;
+  /* height: 100vh; */
   position: relative;
+  background: #000000;
+}
+
+.card-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+body {
+  background: #000000;
 }
 
 :root {
@@ -333,19 +361,33 @@ END:VCARD`;
   --accent-color-rgb: 184, 138, 68;
 }
 
-.root-container {
+/* .root-container {
   background-color: #121212;
   margin: 0;
-}
+} */
 
+.root-container {
+  background-color: #000000;
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow-x: hidden;
+  padding: 16px 0;
+}
 .card-container {
   width: 288px;
-  height: 448px;
+  /* height: 448px; */
+  min-height: 448px;
+  max-height: max-content;
   perspective: 1500px;
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  margin-top: -4rem;
 }
 
 .loading-container,
@@ -372,7 +414,7 @@ END:VCARD`;
   color: #e74c3c;
 }
 
-.card {
+.cards {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
@@ -381,27 +423,30 @@ END:VCARD`;
   position: relative;
 }
 
-.card.flipped {
+.cards.flipped {
   transform: rotateY(180deg);
 }
 
 .card-face {
   position: absolute;
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
+  min-height: 100%;
+  height: auto;
   backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-radius: 16px;
+  border-radius: 8px;
   background-color: var(--card-background);
   padding: 30px;
   box-sizing: border-box;
-  overflow: hidden;
+  /* overflow: hidden; */
   top: 0;
   left: 0;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 8px;
+  background: white;
 }
 
 /* Back face rotation */
@@ -426,7 +471,7 @@ END:VCARD`;
 .header-container {
   display: flex;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 26px;
   position: relative;
   z-index: 3;
 }
@@ -487,6 +532,8 @@ END:VCARD`;
   position: relative;
   z-index: 3;
   transition: background 0.3s ease;
+  text-align: left;
+  line-height: 20px;
 }
 
 .name {
@@ -622,7 +669,7 @@ END:VCARD`;
   border-radius: 30px;
 }
 
-.social-icon {
+/* .social-icon {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -633,6 +680,28 @@ END:VCARD`;
   color: white;
   font-size: 12px;
   text-decoration: none;
+} */
+.social-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.social-icon i {
+  /* display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%; */
+  pointer-events: none;
 }
 
 /* Logo placeholder styling */
