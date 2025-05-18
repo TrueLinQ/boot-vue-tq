@@ -133,10 +133,10 @@ export default {
     };
   },
   created() {
-    // if (this.$route.params.verificationId && this.$route.params.membershipId) {
-    //   this.verificationId = this.$route.params.verificationId;
-    //   this.membershipId = this.$route.params.membershipId;
-    // }
+    if (this.$route.params.verificationId && this.$route.params.membershipId) {
+      this.verificationId = this.$route.params.verificationId;
+      this.membershipId = this.$route.params.membershipId;
+    }
     this.fetchCardData();
   },
   mounted() {
