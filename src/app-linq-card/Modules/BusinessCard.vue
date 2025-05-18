@@ -461,6 +461,10 @@ body {
   left: 0;
   overflow-x: hidden;
   padding: 16px 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .card-container {
   width: 288px;
@@ -713,7 +717,7 @@ body {
   position: relative;
   z-index: 3;
   cursor: pointer;
-  padding: 5px 0 0  0;
+  padding: 5px 0 0 0;
 }
 
 .section {
