@@ -23,7 +23,8 @@
                 <div class="title">{{ cardData.jobRole || null }}</div>
               </div>
 
-              <div class="contact-info" v-if="website">
+              <!-- OLD GOOD ONE -->
+              <!-- <div class="contact-info" v-if="website">
                 <div class="label">Website</div>
                 <div class="contact">{{ website }}</div>
               </div>
@@ -31,8 +32,72 @@
                 <div class="label">Contact</div>
                 <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
                 <div class="contact">{{ cardData.email }}</div>
-                <!-- <div class="contact">{{ website }}</div> -->
+              </div> -->
+
+              <!-- <div class="contact-info flex-center" v-if="website">
+                <div class="label"><i class="fas fa-globe"></i></div>
+                <div class="contact">{{ website }}</div>
+              </div> -->
+              <div class="contact-info flex-center" v-if="website">
+                <div class="label"><i class="fas fa-globe"></i></div>
+                <div class="contact">
+                  <a
+                    :href="website.startsWith('http') ? website : 'https://' + website"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ website }}
+                  </a>
+                </div>
               </div>
+
+              <div class="contact-info flex-center" v-if="cardData.email" id="frontWebsite">
+                <div class="label"><i class="fas fa-envelope"></i></div>
+                <div class="contact">{{ formatEmail(cardData.email) }}</div>
+              </div>
+              <div class="contact-info flex-center" v-if="cardData.phone" id="frontWebsite">
+                <div class="label"><i class="fas fa-phone"></i></div>
+                <div class="contact">{{ cardData.phone }}</div>
+              </div>
+              <!-- <div class="contact-info" id="frontWebsite">
+                <div class="label">Contact</div>
+                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
+                <div class="contact">{{ cardData.email }}</div>
+              </div> -->
+              <!-- <div class="contact-info" v-if="cardData.email" id="frontWebsite">
+                <div>
+                <div class="label"> <i class="fas fa-globe"></i></div>
+                <div class="contact">{{ website }}</div>
+                </div>
+                <div>
+                <div class="label"><i class="fas fa-envelope"></i></div>
+                <div class="contact">{{ cardData.email }}</div></div>
+                <div>
+                <div class="label"><i class="fas fa-phone"></i></div>
+                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
+                </div>
+              </div> -->
+              <!-- <div class="contact-info" id="frontWebsite">
+                <div class="label"><i class="fas fa-phone"></i></div>
+                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
+                <div class="contact">{{ cardData.email }}</div> -->
+              <!-- </div> -->
+
+              <!-- BAD ONE -->
+              <!-- <div class="contact-card">
+                <div class="contact-item" v-if="cardData.phone">
+                  <i class="fas fa-phone"></i>
+                  <span>{{ cardData.phone }}</span>
+                </div>
+                <div class="contact-item email-item">
+                  <i class="fas fa-envelope"></i>
+                  <span>{{ formatEmail(cardData.email) }}</span>
+                </div>
+                <div class="contact-item" v-if="website">
+                  <i class="fas fa-globe"></i>
+                  <span>{{ website }}</span>
+                </div>
+              </div> -->
 
               <div class="social-links">
                 <div class="social-icon" @click.stop="saveCard">
@@ -237,6 +302,21 @@ END:VCARD`;
       document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
       document.documentElement.style.setProperty("--accent-color-rgb", accentRgb);
     },
+    formatEmail(email) {
+      if (!email) return "";
+
+      const threshold = 25;
+      if (email.length <= threshold) return email;
+
+      const atIndex = email.indexOf("@");
+      if (atIndex === -1) return email;
+
+      const username = email.substring(0, atIndex);
+      const domain = email.substring(atIndex); // includes @
+
+      // Move entire domain including @ to the second line using zero-width space before @
+      return `${username}\u200B${domain}`;
+    },
     hexToRgb(hex) {
       // Remove # if present
       hex = hex.replace("#", "");
@@ -427,6 +507,23 @@ END:VCARD`;
 
 body {
   background: #000000;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 8px;
+}
+
+.front .social-links {
+  margin-top: 20px;
+}
+.contact a {
+  color: var(--text-color); /* or inherit if you want to use parent's color */
+  text-decoration: none;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 :root {
@@ -661,7 +758,7 @@ body {
     rgba(var(--primary-color-rgb), 0.15) 0%,
     rgba(var(--primary-color-rgb), 0.02) 100%
   );
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   text-align: left;
 
@@ -678,6 +775,9 @@ body {
   position: relative;
   z-index: 3;
   text-align: left;
+
+  word-break: break-word; /* 💡 Add this */
+  overflow-wrap: break-word;
 }
 
 .contact:last-child {
@@ -804,5 +904,80 @@ body {
   font-size: 24px;
   font-weight: bold;
   color: white;
+}
+
+/* new contacvt secion */
+.contact-card {
+  margin-top: auto;
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--primary-color-rgb), 0.15) 0%,
+    rgba(var(--primary-color-rgb), 0.02) 100%
+  );
+  padding: 16px;
+  border-radius: 8px;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
+}
+
+.contact-title {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--accent-color);
+  position: relative;
+  z-index: 3;
+  display: inline-block;
+  background-color: rgba(var(--accent-color-rgb), 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: left;
+  margin-top: 0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--text-color);
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 3;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.contact-item:last-child {
+  margin-bottom: 0;
+}
+
+.contact-item i {
+  margin-right: 10px;
+  color: var(--accent-color);
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.contact-item span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  display: inline-block;
+}
+
+/* Special handling for email addresses */
+.contact-item.email-item span {
+  word-break: normal;
 }
 </style>
