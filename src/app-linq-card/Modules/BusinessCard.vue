@@ -661,7 +661,7 @@ body {
     rgba(var(--primary-color-rgb), 0.15) 0%,
     rgba(var(--primary-color-rgb), 0.02) 100%
   );
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
   text-align: left;
 
@@ -672,7 +672,7 @@ body {
 }
 
 .contact {
-  font-size: 13px;
+  font-size: 12px;
   margin-bottom: 12px;
   color: var(--text-color);
   position: relative;
