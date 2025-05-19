@@ -467,7 +467,7 @@ body {
   align-items: center;
 }
 .card-container {
-  width: 288px;
+  width: 300px;
   /* height: 448px; */
   min-height: 448px;
   max-height: max-content;
@@ -664,6 +664,11 @@ body {
   padding: 15px;
   border-radius: 8px;
   text-align: left;
+
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .contact {
