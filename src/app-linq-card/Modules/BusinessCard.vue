@@ -23,21 +23,6 @@
                 <div class="title">{{ cardData.jobRole || null }}</div>
               </div>
 
-              <!-- OLD GOOD ONE -->
-              <!-- <div class="contact-info" v-if="website">
-                <div class="label">Website</div>
-                <div class="contact">{{ website }}</div>
-              </div>
-              <div class="contact-info" id="frontWebsite">
-                <div class="label">Contact</div>
-                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
-                <div class="contact">{{ cardData.email }}</div>
-              </div> -->
-
-              <!-- <div class="contact-info flex-center" v-if="website">
-                <div class="label"><i class="fas fa-globe"></i></div>
-                <div class="contact">{{ website }}</div>
-              </div> -->
               <div class="contact-info flex-center" v-if="website">
                 <div class="label"><i class="fas fa-globe"></i></div>
                 <div class="contact">
@@ -59,66 +44,15 @@
                 <div class="label"><i class="fas fa-phone"></i></div>
                 <div class="contact">{{ cardData.phone }}</div>
               </div>
-              <!-- <div class="contact-info" id="frontWebsite">
-                <div class="label">Contact</div>
-                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
-                <div class="contact">{{ cardData.email }}</div>
-              </div> -->
-              <!-- <div class="contact-info" v-if="cardData.email" id="frontWebsite">
-                <div>
-                <div class="label"> <i class="fas fa-globe"></i></div>
-                <div class="contact">{{ website }}</div>
-                </div>
-                <div>
-                <div class="label"><i class="fas fa-envelope"></i></div>
-                <div class="contact">{{ cardData.email }}</div></div>
-                <div>
-                <div class="label"><i class="fas fa-phone"></i></div>
-                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
-                </div>
-              </div> -->
-              <!-- <div class="contact-info" id="frontWebsite">
-                <div class="label"><i class="fas fa-phone"></i></div>
-                <div class="contact" v-if="cardData.phone">{{ cardData.phone }}</div>
-                <div class="contact">{{ cardData.email }}</div> -->
-              <!-- </div> -->
-
-              <!-- BAD ONE -->
-              <!-- <div class="contact-card">
-                <div class="contact-item" v-if="cardData.phone">
-                  <i class="fas fa-phone"></i>
-                  <span>{{ cardData.phone }}</span>
-                </div>
-                <div class="contact-item email-item">
-                  <i class="fas fa-envelope"></i>
-                  <span>{{ formatEmail(cardData.email) }}</span>
-                </div>
-                <div class="contact-item" v-if="website">
-                  <i class="fas fa-globe"></i>
-                  <span>{{ website }}</span>
-                </div>
-              </div> -->
 
               <div class="social-links">
-                <div class="social-icon" @click.stop="saveCard">
+                <div class="social-icon" @click.stop="openVCard">
                   <i class="fas fa-arrow-down"></i>
                 </div>
                 <div class="social-icon" @click.stop="shareCard">
                   <i class="fas fa-external-link-alt"></i>
                 </div>
               </div>
-
-              <!-- <div class="qr-container">
-                <div class="qr-code">
-                  <qr-code
-                    :value="cardLink"
-                    :options="{
-                      size: 110,
-                      padding: 5,
-                    }"
-                  ></qr-code>
-                </div>
-              </div> -->
 
               <div class="click-hint" @click="flipCard">Tap to flip</div>
             </div>
@@ -136,11 +70,6 @@
                 <div class="contact">{{ cardData.address }}</div>
               </div>
 
-              <!-- <div class="section" v-if="website">
-                <div class="label">Website</div>
-                <div class="contact">{{ website }}</div>
-              </div> -->
-
               <div class="social-links">
                 <div
                   v-for="profile in activeSocialProfiles"
@@ -155,7 +84,7 @@
               <div class="qr-container">
                 <div class="qr-code">
                   <qr-code
-                    :value="vCardData"
+                    :value="cardLink"
                     :options="{
                       size: 130,
                       padding: 5,
@@ -441,6 +370,20 @@ END:VCARD`;
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }, 100);
+    },
+    openVCard() {
+      const dataUrl = `data:text/vcard;charset=utf-8,${encodeURIComponent(this.vCardData)}`;
+
+      // Check if it's a mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // On mobile, direct navigation often works better
+        window.location.href = dataUrl;
+      } else {
+        // On desktop, open in new tab
+        window.open(dataUrl, "_blank");
+      }
     },
   },
 };
