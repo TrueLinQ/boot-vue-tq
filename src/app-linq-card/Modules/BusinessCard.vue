@@ -66,7 +66,7 @@
               </div>
 
               <div class="section" v-if="cardData.address">
-                <div class="label">Address</div>
+                <div class="label adress">Address</div>
                 <div class="contact">{{ cardData.address }}</div>
               </div>
 
@@ -152,9 +152,17 @@ export default {
     companyName() {
       return this.cardData.company || "CONAY";
     },
+    // themeColorFromCard() {
+    //   const theme = this.cardData.theme;
+    //   return theme && theme.toLowerCase() !== "alvia" ? theme : "#d4af37"; // Default color
+    // },
     themeColorFromCard() {
-      const theme = this.cardData.theme;
-      return theme && theme.toLowerCase() !== "alvia" ? theme : "#d4af37"; // Default color
+      // Color will always come from the color key, fallback to gold
+      return this.cardData.color || "#d4af37";
+    },
+    isDarkTheme() {
+      // If theme is 'default', use dark theme, otherwise light theme
+      return ["default", "dark"].includes(this.cardData.theme?.toLowerCase());
     },
 
     companyLogo() {
@@ -215,21 +223,45 @@ END:VCARD`;
       this.isFlipped = !this.isFlipped;
     },
     applyTheme() {
-      const theme = this.themeColorFromCard;
+      const themeColor = this.themeColorFromCard;
 
-      // Set CSS variables for theme colors
-      document.documentElement.style.setProperty("--primary-color", theme);
-      document.documentElement.style.setProperty("--secondary-color", this.lightenColor(theme, 30));
-      document.documentElement.style.setProperty("--accent-color", this.darkenColor(theme, 20));
+      if (this.isDarkTheme) {
+        // Apply dark theme with the color from color key
+        document.documentElement.style.setProperty("--primary-color", themeColor);
+        document.documentElement.style.setProperty("--secondary-color", this.lightenColor(themeColor, 30));
+        document.documentElement.style.setProperty("--accent-color", this.darkenColor(themeColor, 20));
+        document.documentElement.style.setProperty("--text-color", "#ffffff");
+        document.documentElement.style.setProperty("--card-background", "rgba(20, 20, 20, 0.97)");
+        document.documentElement.style.setProperty("--card-face-background", "#1a1a1a"); // Dark card face
+        document.documentElement.style.setProperty("--border-color", "rgba(255, 255, 255, 0.2)");
 
-      // Convert hex to RGB for gradients
-      const primaryRgb = this.hexToRgb(theme);
-      const secondaryRgb = this.hexToRgb(this.lightenColor(theme, 30));
-      const accentRgb = this.hexToRgb(this.darkenColor(theme, 20));
+        // RGB versions for gradients
+        const primaryRgb = this.hexToRgb(themeColor);
+        const secondaryRgb = this.hexToRgb(this.lightenColor(themeColor, 30));
+        const accentRgb = this.hexToRgb(this.darkenColor(themeColor, 20));
 
-      document.documentElement.style.setProperty("--primary-color-rgb", primaryRgb);
-      document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
-      document.documentElement.style.setProperty("--accent-color-rgb", accentRgb);
+        document.documentElement.style.setProperty("--primary-color-rgb", primaryRgb);
+        document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
+        document.documentElement.style.setProperty("--accent-color-rgb", accentRgb);
+      } else {
+        // Apply light theme with the color from color key
+        document.documentElement.style.setProperty("--primary-color", themeColor);
+        document.documentElement.style.setProperty("--secondary-color", this.lightenColor(themeColor, 30));
+        document.documentElement.style.setProperty("--accent-color", this.darkenColor(themeColor, 20));
+        document.documentElement.style.setProperty("--text-color", "#e0e0e0");
+        document.documentElement.style.setProperty("--card-background", "rgba(30, 30, 30, 0.97)");
+        document.documentElement.style.setProperty("--card-face-background", "white"); // Light card face
+        document.documentElement.style.setProperty("--border-color", "rgba(255, 255, 255, 0.1)");
+
+        // RGB versions for gradients
+        const primaryRgb = this.hexToRgb(themeColor);
+        const secondaryRgb = this.hexToRgb(this.lightenColor(themeColor, 30));
+        const accentRgb = this.hexToRgb(this.darkenColor(themeColor, 20));
+
+        document.documentElement.style.setProperty("--primary-color-rgb", primaryRgb);
+        document.documentElement.style.setProperty("--secondary-color-rgb", secondaryRgb);
+        document.documentElement.style.setProperty("--accent-color-rgb", accentRgb);
+      }
     },
     formatEmail(email) {
       if (!email) return "";
@@ -507,7 +539,7 @@ body {
   align-items: center;
 }
 .card-container {
-  width: 300px;
+  width: 301px;
   /* height: 448px; */
   min-height: 448px;
   max-height: max-content;
@@ -576,7 +608,7 @@ body {
   left: 0;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: white;
+  background: var(--card-face-background, white);
 }
 
 /* Back face rotation */
@@ -785,7 +817,6 @@ body {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 5px;
   font-weight: 600;
   color: var(--accent-color);
   position: relative;
@@ -795,6 +826,9 @@ body {
   padding: 3px 8px;
   border-radius: 4px;
   text-align: left;
+}
+.adress {
+  margin-bottom: 5px;
 }
 
 .social-links {
