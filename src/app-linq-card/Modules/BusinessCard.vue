@@ -122,8 +122,10 @@ export default {
       // themeColor: themeColorFromCard, // Default theme color
       // verificationId: "68237e44d62b6702e7a54fae",
       // membershipId: "68237e44d62b6702e7a54faf",
-      verificationId: "682848fbd62b6748a85eff58",
-      membershipId: "682848fbd62b6748a85eff59",
+      // verificationId: "682848fbd62b6748a85eff58",
+      // membershipId: "682848fbd62b6748a85eff59",
+       verificationId: "683dcc53d62b6789d558ad3f",
+      membershipId: "683dcc53d62b6789d558ad40",
     };
   },
   created() {
@@ -248,7 +250,7 @@ END:VCARD`;
         document.documentElement.style.setProperty("--primary-color", themeColor);
         document.documentElement.style.setProperty("--secondary-color", this.lightenColor(themeColor, 30));
         document.documentElement.style.setProperty("--accent-color", this.darkenColor(themeColor, 20));
-        document.documentElement.style.setProperty("--text-color", "#e0e0e0");
+        document.documentElement.style.setProperty("--text-color", "#333333");
         document.documentElement.style.setProperty("--card-background", "rgba(30, 30, 30, 0.97)");
         document.documentElement.style.setProperty("--card-face-background", "white"); // Light card face
         document.documentElement.style.setProperty("--border-color", "rgba(255, 255, 255, 0.1)");
@@ -278,6 +280,13 @@ END:VCARD`;
       // Move entire domain including @ to the second line using zero-width space before @
       return `${username}\u200B${domain}`;
     },
+/*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Converts a hex color string to a CSS-style RGB string, e.g. "#FF0000" to "255, 0, 0"
+     * @param {string} hex - The hex color string to convert
+     * @returns {string} The CSS-style RGB string
+     */
+/*******  75a74b80-6c2a-4366-9c1d-cc5714bcad78  *******/
     hexToRgb(hex) {
       // Remove # if present
       hex = hex.replace("#", "");
@@ -670,13 +679,20 @@ body {
   z-index: 1;
 }
 
-.logo-image {
+/* .logo-image {
   width: 100%;
-  height: 100%;
+ /* height: 100%;
   object-fit: cover;
   object-position: center;
   z-index: 2;
-  position: relative;
+  position: relative; */
+/* } */ 
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* <-- instead of cover if you don't want cropping */
+  object-position: center;
+  display: block;
 }
 
 #frontSection {
