@@ -122,10 +122,10 @@ export default {
       // themeColor: themeColorFromCard, // Default theme color
       // verificationId: "68237e44d62b6702e7a54fae",
       // membershipId: "68237e44d62b6702e7a54faf",
-      // verificationId: "682848fbd62b6748a85eff58",
-      // membershipId: "682848fbd62b6748a85eff59",
-       verificationId: "683dcc53d62b6789d558ad3f",
-      membershipId: "683dcc53d62b6789d558ad40",
+       verificationId: "682848fbd62b6748a85eff58",
+       membershipId: "682848fbd62b6748a85eff59",
+       //verificationId: "683dcc53d62b6789d558ad3f",
+      //membershipId: "683dcc53d62b6789d558ad40",
     };
   },
   created() {
@@ -731,7 +731,7 @@ body {
 }
 
 .title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   /* margin-bottom: 20px; */
   letter-spacing: 1px;
@@ -762,7 +762,7 @@ body {
 }
 
 .contact {
-  font-size: 12px;
+  font-size: 13px;
   margin-bottom: 12px;
   color: var(--text-color);
   position: relative;
@@ -832,7 +832,7 @@ body {
 }
 
 .label {
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
