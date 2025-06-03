@@ -548,7 +548,9 @@ body {
   align-items: center;
 }
 .card-container {
-  width: 301px;
+  /* width: 301px; */
+  width: 92vw;
+  max-width: 326px;
   /* height: 448px; */
   min-height: 448px;
   max-height: max-content;
