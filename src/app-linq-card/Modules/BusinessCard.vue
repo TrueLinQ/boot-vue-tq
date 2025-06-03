@@ -612,7 +612,7 @@ body {
   justify-content: space-between;
   border-radius: 8px;
   background-color: var(--card-background);
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
   /* overflow: hidden; */
   top: 0;
@@ -702,7 +702,7 @@ body {
 }
 /* Logo text styling */
 .logo {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   letter-spacing: 2px;
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
@@ -762,7 +762,7 @@ body {
 }
 
 .contact {
-  font-size: 13px;
+  font-size: 14px;
   margin-bottom: 12px;
   color: var(--text-color);
   position: relative;
