@@ -67,7 +67,7 @@
 
               <div class="section" v-if="cardData.address">
                 <div class="label adress">Address</div>
-                <div class="contact">{{ cardData.address }}</div>
+                <div class="contact" v-html="formattedAddress"></div>
               </div>
 
               <div class="social-links">
@@ -154,6 +154,9 @@ export default {
     companyName() {
       return this.cardData.company || "CONAY";
     },
+     formattedAddress() {
+    return this.cardData.address.replace(/\n/g, '<br>');
+  },
     // themeColorFromCard() {
     //   const theme = this.cardData.theme;
     //   return theme && theme.toLowerCase() !== "alvia" ? theme : "#d4af37"; // Default color
@@ -688,7 +691,7 @@ body {
   object-position: center;
   z-index: 2;
   position: relative; */
-/* } */ 
+/* } */
 .logo-image {
   width: 100%;
   height: 100%;
