@@ -14,6 +14,10 @@ module.exports = {
   productionSourceMap: false,
   filenameHashing: false,
 
+   transpileDependencies: [
+    'lucide-vue'
+  ],
+
   publicPath: process.env.NODE_ENV === "production" ? "./" : "/",
   configureWebpack: (config) => {
     // Set output filename format

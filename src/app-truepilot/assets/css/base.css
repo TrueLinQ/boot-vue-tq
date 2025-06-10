@@ -1,0 +1,142 @@
+/* Variables */
+:root {
+  --color-primary: #000;
+  --color-secondary: #333;
+  --color-text: #000;
+  --color-light-text: #666;
+  --color-background: #fff;
+  --color-light-background: #f8f8f8;
+  --color-border: #e5e5e5;
+
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 40px;
+  --spacing-xl: 60px;
+  --spacing-xxl: 80px;
+
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-base);
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  margin-bottom: var(--spacing-sm);
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 400;
+}
+
+h2 {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+p {
+  font-size: 16px;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background: var(--color-secondary);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 16px;
+  padding: var(--spacing-sm) 0;
+  width: 100%;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
+
+.section-padding {
+  padding: var(--spacing-xxl) 0;
+}
+
+.margin-bottom-xl {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 36px;
+  }
+
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+}
