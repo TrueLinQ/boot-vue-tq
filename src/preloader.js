@@ -22,6 +22,7 @@ try{
 
 let VUE_APP_VERSION = process.env?.VUE_APP_VERSION;
 let VUE_APP_TIMESTAMP = process.env?.VUE_APP_TIMESTAMP
+let VUE_APP_PORT = process.env?.VUE_APP_PORT
 
 
 console.log("preloader",window.CONST,VUE_APP_TIMESTAMP);
@@ -37,7 +38,7 @@ try {
 }
 
 window.localCDN = function(url){
-	let context = (window.CONST.CONTEXT || window.CONST.APP_CONTEXT) || "/"
-	document.cookie=`CDN_URL=${btoa("http://127.0.0.1:8080")};path=`+context
-	document.cookie=`BOOTJX_CDN_URL=${btoa("http://127.0.0.1:8080")};path=`+context
+	let context = (window.CONST.WEBAPP || window.CONST.CONTEXT || window.CONST.APP_CONTEXT) || "/";
+	document.cookie=`CDN_URL=${btoa("http://127.0.0.1:"+VUE_APP_PORT)};path=`+context
+	document.cookie=`BOOTJX_CDN_URL=${btoa("http://127.0.0.1:"+VUE_APP_PORT)};path=`+context
 }

@@ -13,6 +13,7 @@ function getlocalConfig() {
 }
 
 let CONFIG = {
+  server : {},
   getAppName() {
     let slectedAppName = window.CONST?.WEBAPP || window.CONST?.APP;
     if (!slectedAppName) {
@@ -61,9 +62,13 @@ let CONFIG = {
         },
         port: 8443,
         host: "0.0.0.0", // So it's accessible over the local network
+        ...this.server
       };
     }
-    return {};
+    return {
+      port : 8080,
+      ...this.server
+    };
   },
 };
 

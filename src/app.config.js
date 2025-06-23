@@ -48,4 +48,7 @@ module.exports = AppConfig.extend({
       entry: "./src/main.js",
     },
   },
+  server : {
+    port: 8080,
+  }
 });

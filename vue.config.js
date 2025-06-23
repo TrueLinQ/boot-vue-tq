@@ -2,6 +2,7 @@ const appConfig = require("./src/app.config.js");
 
 process.env.VUE_APP_VERSION = require("./package.json").version;
 process.env.VUE_APP_TIMESTAMP = Date.now();
+process.env.VUE_APP_PORT = appConfig.devServer().port || 8080;
 
 const appName = process.env.VUE_APP_NAME || "default";
 const publicPath = appConfig.getPublicPath(appName);
