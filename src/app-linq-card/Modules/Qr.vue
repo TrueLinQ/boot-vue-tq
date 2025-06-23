@@ -2,9 +2,9 @@
     <div class="qr-containers" :style="containerStyle">
       <canvas ref="qrCanvas" class="qr-canvas"></canvas>
     </div>
-  </template>
+</template>
   
-  <script>
+<script>
   import QRCode from 'qrcode';
   
   export default {
