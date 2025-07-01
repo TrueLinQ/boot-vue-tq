@@ -22,7 +22,8 @@ export default {
 </script>
 
 <style>
-/* Global styles specific to App.vue can go here, though most should be in base.css or component-specific */
+@import './assets/css/base.css';
+
 #app {
   display: flex;
   flex-direction: column;

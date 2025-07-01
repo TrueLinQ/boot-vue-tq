@@ -8,6 +8,9 @@ import '@fortawesome/fontawesome-free/css/all.css'
 import { BootLoader } from "./@common";
 import appConfig from "./app.config.js";
 
+import './tailwind.css';
+
+
 Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 

@@ -1,6 +1,6 @@
 <template>
   <div class="review-container">
-    <Header />
+   
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-8 col-md-10">
@@ -157,7 +157,6 @@ export default {
   name: "ModernReviewForm",
   components: {
     Star,
-    Header,
   },
   data() {
     return {

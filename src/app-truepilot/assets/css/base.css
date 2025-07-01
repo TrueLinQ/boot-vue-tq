@@ -1,28 +1,64 @@
 /* Variables */
 :root {
-  --color-primary: #000;
-  --color-secondary: #333;
-  --color-text: #000;
+  /* Colors */
+  --color-primary: #000000; /* Main accent color */
+  --color-secondary: #f59e0b; /* Example secondary color */
+  --color-text: #1a1a1a; /* Darker text for better contrast */
   --color-light-text: #666;
-  --color-background: #fff;
+  --color-background: #ffffff;
   --color-light-background: #f8f8f8;
   --color-border: #e5e5e5;
+  --color-heading: #1a1a1a; /* Specific heading color */
+  --color-white: #ffffff; /* Explicit white color */
+  --color-text-dark: #374151; /* For category tag text */
+  --color-gray: #d1d5db; /* For empty stars */
+  --color-gray-light: #f3f4f6; /* For category tag background */
 
+  /* Typography */
   --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-md: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.5rem; /* 24px */
+  --font-size-xxl: 2rem; /* 32px */
+  --font-size-h1: 3rem; /* Approx 48px */
+  --font-size-h2: 2.25rem; /* Approx 36px */
+  --font-size-h3: 1.25rem; /* Approx 20px */
 
-  --spacing-xs: 8px;
-  --spacing-sm: 16px;
-  --spacing-md: 24px;
-  --spacing-lg: 40px;
-  --spacing-xl: 60px;
-  --spacing-xxl: 80px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 40px;
+  --spacing-xxxl: 60px;
+
+  /* Border Radii */
+  --border-radius-xs: 4px;
   --border-radius-sm: 6px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Transitions */
+  --transition-ease: all 0.2s ease;
+
+  /* Max content width for main container */
+  --content-max-width: 1200px;
 }
 
-/* Base Styles */
+/* Global Resets and Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -31,60 +67,104 @@
 
 body {
   font-family: var(--font-family-base);
-  line-height: 1.6;
+  font-size: var(--font-size-md);
   color: var(--color-text);
+  line-height: 1.6;
   background: var(--color-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
   padding: 0 var(--spacing-md);
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  line-height: 1.2;
+  margin-top: 0;
   margin-bottom: var(--spacing-sm);
+  line-height: 1.2;
+  color: var(--color-heading);
 }
 
 h1 {
-  font-size: 48px;
-  font-weight: 400;
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-regular);
 }
 
 h2 {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
 }
 
 h3 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
 }
 
 p {
-  font-size: 16px;
+  font-size: var(--font-size-md);
+  margin-top: 0;
   margin-bottom: var(--spacing-sm);
 }
 
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: var(--transition-ease);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 /* Buttons */
+button {
+  font-family: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
 .btn-primary {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
   border: none;
   padding: 12px 24px;
   border-radius: var(--border-radius-sm);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s ease-in-out;
+  font-size: var(--font-size-md);
+  transition: var(--transition-ease);
 }
 
 .btn-primary:hover {
   background: var(--color-secondary);
+}
+
+/* A secondary button style for 'Visit Website' */
+.btn-secondary {
+  background: none;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  transition: var(--transition-ease);
+  text-align: center; /* Ensures text alignment for anchor tag */
+  display: inline-flex; /* Ensures proper button-like behavior */
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 .btn-link {
@@ -93,7 +173,7 @@ p {
   color: var(--color-primary);
   text-decoration: underline;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   padding: var(--spacing-sm) 0;
   width: 100%;
 }
@@ -108,13 +188,24 @@ p {
   padding: var(--spacing-sm) var(--spacing-md);
   border: 2px solid var(--color-border);
   border-radius: var(--border-radius-sm);
-  font-size: 16px;
+  font-size: var(--font-size-md);
   outline: none;
-  transition: border-color 0.2s ease-in-out;
+  transition: var(--transition-ease);
 }
 
 .form-input:focus {
   border-color: var(--color-primary);
+}
+
+/* Specific styling for select dropdown icon */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23666666" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
 }
 
 /* Utility Classes */
@@ -133,7 +224,7 @@ p {
 /* Responsive Utilities */
 @media (max-width: 768px) {
   h1 {
-    font-size: 36px;
+    font-size: var(--font-size-h2);
   }
 
   .container {

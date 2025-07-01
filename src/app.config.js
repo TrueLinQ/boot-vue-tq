@@ -52,6 +52,16 @@ module.exports = AppConfig.extend({
       context: "/truepilot",
       entry: './src/main.js',
     },
+    work: {
+      // entry: "./src/main.js",
+      // template: "public/app-customer.html",
+      // filename: "app-customer.html",
+      // title: "Customer Aapp",
+      //chunks: ["chunk-vendors", "chunk-common", "customer"],
+      component: () => import("@/app-work/AppWork.vue"),
+      context: "/work",
+      entry: './src/main.js',
+    },
     default: {
       component: () => import("@/app/App.vue"),
       context: "/",

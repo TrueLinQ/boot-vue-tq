@@ -582,7 +582,7 @@ export default {
 
 .container {
   margin-top: 60px;
-  max-width: 800px;
+  /* max-width: 800px; */
   margin-left: auto;
   margin-right: auto;
   padding: 0 20px;

@@ -283,13 +283,11 @@ END:VCARD`;
       // Move entire domain including @ to the second line using zero-width space before @
       return `${username}\u200B${domain}`;
     },
-/*************  ✨ Windsurf Command ⭐  *************/
     /**
      * Converts a hex color string to a CSS-style RGB string, e.g. "#FF0000" to "255, 0, 0"
      * @param {string} hex - The hex color string to convert
      * @returns {string} The CSS-style RGB string
      */
-/*******  75a74b80-6c2a-4366-9c1d-cc5714bcad78  *******/
     hexToRgb(hex) {
       // Remove # if present
       hex = hex.replace("#", "");

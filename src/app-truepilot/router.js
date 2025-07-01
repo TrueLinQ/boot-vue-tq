@@ -10,7 +10,38 @@ export default BootRouter.route({
     {
       path: "/",
       name: "LandingPage",
-      component: () => import("./pages/Landing.vue"),
+      // component: () => import("./pages/Landing.vue"),
+        component: () => import("./views/LandingPage.vue"),
+    },
+    {
+      path: "/cmplist",
+      name: "comanyliusr",
+      // component: () => import("./pages/Landing.vue"),
+        component: () => import("./views/CompanyListPage.vue"),
+    },
+    {
+      path: "/cmpview",
+      name: "comanyliusr",
+      // component: () => import("./pages/Landing.vue"),
+        component: () => import("./views/CompanyDetailPage.vue"),
+    },
+     {
+      path: "/ad",
+      name: "asdf",
+      // component: () => import("./pages/Landing.vue"),
+        component: () => import("./pages/PostAd.vue"),
+    },
+     {
+      path: "/cc",
+      name: "asdf",
+      // component: () => import("./pages/Landing.vue"),
+        component: () => import("./pages/CreateCompany.vue"),
+    },
+     {
+      path: "/profile",
+      name: "asdf",
+      // component: () => import("./pages/Landing.vue"),
+        component: () => import("./modules/CreateProfile.vue"),
     },
     // {
     //   path: "/login",
