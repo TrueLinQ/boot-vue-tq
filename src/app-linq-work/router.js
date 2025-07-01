@@ -1,8 +1,8 @@
 import { BootRouter } from "@/@common";
 
 export default BootRouter.route({
-  app: "work",
-  base: "/work/",
+  app: "linq/work",
+  base: "/linq/work",
   routes: [
     {
       path: "/",

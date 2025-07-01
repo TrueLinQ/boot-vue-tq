@@ -52,14 +52,14 @@ module.exports = AppConfig.extend({
       context: "/truepilot",
       entry: './src/main.js',
     },
-    work: {
+    "linq/work": {
       // entry: "./src/main.js",
       // template: "public/app-customer.html",
       // filename: "app-customer.html",
       // title: "Customer Aapp",
       //chunks: ["chunk-vendors", "chunk-common", "customer"],
-      component: () => import("@/app-work/AppWork.vue"),
-      context: "/work",
+      component: () => import("@/app-linq-work/AppWork.vue"),
+      context: "/linq/work",
       entry: './src/main.js',
     },
     default: {
