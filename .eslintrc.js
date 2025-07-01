@@ -18,4 +18,10 @@ module.exports = {
     "no-unreachable": "off",
     "no-mixed-spaces-and-tabs" : "off"
   },
+  globals: {
+    defineProps: 'readonly',
+    defineEmits: 'readonly',
+    defineExpose: 'readonly',
+    withDefaults: 'readonly'
+  }
 };
