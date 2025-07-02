@@ -1,47 +1,44 @@
 <template>
-  <div class="min-h-screen px-4 py-12 bg-gray-50">
-    <div class="max-w-4xl mx-auto">
+  <div class="profile-container">
+    <div class="profile-wrapper">
       <!-- Profile Header Section -->
-      <div class="mb-8 bg-white border border-gray-200 rounded-lg">
-        <div class="p-8">
-          <div class="flex items-start justify-between mb-8">
-            <div class="flex items-start">
-              <div class="flex items-center justify-center w-16 h-16 mr-6 text-xl font-medium text-indigo-600 border-2 border-indigo-600 rounded-full">
+      <div class="profile-header">
+        <div class="profile-content">
+          <div class="profile-top">
+            <div class="profile-info">
+              <div class="profile-avatar">
                 {{ getInitials(profile.fullName) }}
               </div>
-              <div class="flex-1">
-                <div class="flex items-center mb-3">
-                  <h1 class="mr-3 text-2xl font-medium text-gray-900">{{ profile.fullName }}</h1>
-                  <span v-if="profile.isPublic" class="text-green-500">●</span>
-                  <span v-else class="text-gray-400">●</span>
+              <div class="profile-details">
+                <div class="profile-name-row">
+                  <h1 class="profile-name">{{ profile.fullName }}</h1>
+                  <span v-if="profile.isPublic" class="status-dot online">●</span>
+                  <span v-else class="status-dot offline">●</span>
                 </div>
-                <p class="mb-2 text-gray-700">{{ profile.profession }}</p>
-                <p v-if="profile.company" class="mb-2 text-gray-500">{{ profile.company }}</p>
-                <p v-if="profile.location" class="text-gray-500">{{ profile.location }}</p>
+                <p class="profile-profession">{{ profile.profession }}</p>
+                <p v-if="profile.company" class="profile-company">{{ profile.company }}</p>
+                <p v-if="profile.location" class="profile-location">{{ profile.location }}</p>
               </div>
             </div>
-            <button
-              @click="toggleEditMode"
-              class="px-6 py-2 font-medium text-indigo-600 transition-all duration-300 border border-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white"
-            >
+            <button @click="toggleEditMode" class="edit-button">
               Edit Profile
             </button>
           </div>
 
           <!-- Bio Section -->
-          <div class="mb-8">
-            <h3 class="mb-4 text-sm font-medium tracking-wide text-gray-900 uppercase">About</h3>
-            <p class="leading-relaxed text-gray-700">{{ profile.bio || 'No bio available.' }}</p>
+          <div class="section">
+            <h3 class="section-title">ABOUT</h3>
+            <p class="bio-text">{{ profile.bio || 'No bio available.' }}</p>
           </div>
 
           <!-- Skills Section -->
-          <div class="mb-8" v-if="profile.skills && profile.skills.length > 0">
-            <h3 class="mb-4 text-sm font-medium tracking-wide text-gray-900 uppercase">Skills</h3>
-            <div class="flex flex-wrap gap-2">
+          <div class="section" v-if="profile.skills && profile.skills.length > 0">
+            <h3 class="section-title">SKILLS</h3>
+            <div class="skills-container">
               <span
                 v-for="(skill, index) in profile.skills"
                 :key="index"
-                class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-lg"
+                class="skill-tag"
               >
                 {{ skill }}
               </span>
@@ -49,14 +46,14 @@
           </div>
 
           <!-- Contact Information -->
-          <div class="mb-8">
-            <h3 class="mb-4 text-sm font-medium tracking-wide text-gray-900 uppercase">Contact</h3>
-            <div class="flex items-center">
+          <div class="section">
+            <h3 class="section-title">CONTACT</h3>
+            <div class="contact-info">
               <div>
-                <p class="mb-1 text-gray-900">
+                <p class="contact-method">
                   {{ profile.contactMethod === 'whatsapp' ? 'WhatsApp' : 'Phone' }}
                 </p>
-                <p class="text-gray-600">{{ profile.contactValue }}</p>
+                <p class="contact-value">{{ profile.contactValue }}</p>
               </div>
             </div>
           </div>
@@ -64,22 +61,17 @@
       </div>
 
       <!-- Connections Section -->
-      <div class="bg-white border border-gray-200 rounded-lg">
-        <div class="p-8">
-          <h2 class="mb-8 text-xl font-medium text-gray-900">Connections</h2>
+      <div class="connections-section">
+        <div class="connections-content">
+          <h2 class="connections-title">Connections</h2>
 
           <!-- Connection Tabs -->
-          <div class="flex mb-8 border-b border-gray-200">
+          <div class="tabs-container">
             <button
               v-for="tab in connectionTabs"
               :key="tab.key"
               @click="activeTab = tab.key"
-              :class="[
-                'px-4 py-3 text-sm font-medium transition-colors mr-8',
-                activeTab === tab.key
-                  ? 'border-b-2 border-indigo-600 text-indigo-600'
-                  : 'text-gray-600 hover:text-indigo-600'
-              ]"
+              :class="['tab-button', activeTab === tab.key ? 'tab-active' : '']"
             >
               {{ tab.label }} {{ getConnectionCount(tab.key) }}
             </button>
@@ -87,32 +79,28 @@
 
           <!-- Accepted Connections -->
           <div v-if="activeTab === 'accepted'">
-            <div v-if="connections.accepted.length === 0" class="py-12 text-center">
-              <p class="text-gray-500">No connections yet</p>
+            <div v-if="connections.accepted.length === 0" class="empty-state">
+              <p>No connections yet</p>
             </div>
-            <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div v-else class="connections-grid">
               <div
                 v-for="connection in connections.accepted"
                 :key="connection.id"
-                class="p-6 transition-colors border border-gray-200 rounded-lg hover:border-indigo-600"
+                class="connection-card"
               >
-                <div class="flex items-start mb-4">
-                  <div class="flex items-center justify-center w-10 h-10 mr-4 text-sm font-medium text-gray-700 border border-gray-400 rounded-full">
+                <div class="connection-header">
+                  <div class="connection-avatar">
                     {{ getInitials(connection.name) }}
                   </div>
-                  <div class="flex-1">
-                    <h4 class="mb-1 font-medium text-gray-900">{{ connection.name }}</h4>
-                    <p class="text-sm text-gray-600">{{ connection.profession }}</p>
+                  <div class="connection-info">
+                    <h4 class="connection-name">{{ connection.name }}</h4>
+                    <p class="connection-profession">{{ connection.profession }}</p>
                   </div>
                 </div>
-                <p class="mb-4 text-sm leading-relaxed text-gray-700">{{ connection.description }}</p>
-                <div class="flex gap-2">
-                  <button class="px-4 py-2 font-medium text-white transition-all duration-300 bg-indigo-600 rounded-lg hover:bg-indigo-700">
-                    Message
-                  </button>
-                  <button class="px-4 py-2 font-medium text-gray-700 transition-all duration-300 border border-gray-300 rounded-lg hover:border-indigo-600 hover:text-indigo-600">
-                    View
-                  </button>
+                <p class="connection-description">{{ connection.description }}</p>
+                <div class="connection-actions">
+                  <button class="action-button primary">Message</button>
+                  <button class="action-button secondary">View</button>
                 </div>
               </div>
             </div>
@@ -120,35 +108,35 @@
 
           <!-- Pending Connections -->
           <div v-if="activeTab === 'pending'">
-            <div v-if="connections.pending.length === 0" class="py-12 text-center">
-              <p class="text-gray-500">No pending requests</p>
+            <div v-if="connections.pending.length === 0" class="empty-state">
+              <p>No pending requests</p>
             </div>
-            <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div v-else class="connections-grid">
               <div
                 v-for="connection in connections.pending"
                 :key="connection.id"
-                class="p-6 border rounded-lg border-amber-200 bg-amber-50"
+                class="connection-card pending"
               >
-                <div class="flex items-start mb-4">
-                  <div class="flex items-center justify-center w-10 h-10 mr-4 text-sm font-medium border rounded-full border-amber-400 text-amber-700">
+                <div class="connection-header">
+                  <div class="connection-avatar pending-avatar">
                     {{ getInitials(connection.name) }}
                   </div>
-                  <div class="flex-1">
-                    <h4 class="mb-1 font-medium text-gray-900">{{ connection.name }}</h4>
-                    <p class="text-sm text-gray-600">{{ connection.profession }}</p>
+                  <div class="connection-info">
+                    <h4 class="connection-name">{{ connection.name }}</h4>
+                    <p class="connection-profession">{{ connection.profession }}</p>
                   </div>
                 </div>
-                <p class="mb-4 text-sm leading-relaxed text-gray-700">{{ connection.description }}</p>
-                <div class="flex gap-2">
+                <p class="connection-description">{{ connection.description }}</p>
+                <div class="connection-actions">
                   <button
                     @click="acceptConnection(connection.id)"
-                    class="px-4 py-2 font-medium text-white transition-all duration-300 bg-green-700 rounded-lg hover:bg-green-800"
+                    class="action-button accept"
                   >
                     Accept
                   </button>
                   <button
                     @click="rejectConnection(connection.id)"
-                    class="px-4 py-2 font-medium text-red-700 transition-all duration-300 border border-red-300 rounded-lg hover:border-red-500"
+                    class="action-button reject"
                   >
                     Reject
                   </button>
@@ -159,29 +147,29 @@
 
           <!-- Rejected Connections -->
           <div v-if="activeTab === 'rejected'">
-            <div v-if="connections.rejected.length === 0" class="py-12 text-center">
-              <p class="text-gray-500">No rejected connections</p>
+            <div v-if="connections.rejected.length === 0" class="empty-state">
+              <p>No rejected connections</p>
             </div>
-            <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div v-else class="connections-grid">
               <div
                 v-for="connection in connections.rejected"
                 :key="connection.id"
-                class="p-6 border border-gray-200 rounded-lg opacity-60"
+                class="connection-card rejected"
               >
-                <div class="flex items-start mb-4">
-                  <div class="flex items-center justify-center w-10 h-10 mr-4 text-sm font-medium text-gray-500 border border-gray-300 rounded-full">
+                <div class="connection-header">
+                  <div class="connection-avatar rejected-avatar">
                     {{ getInitials(connection.name) }}
                   </div>
-                  <div class="flex-1">
-                    <h4 class="mb-1 font-medium text-gray-700">{{ connection.name }}</h4>
-                    <p class="text-sm text-gray-500">{{ connection.profession }}</p>
+                  <div class="connection-info">
+                    <h4 class="connection-name">{{ connection.name }}</h4>
+                    <p class="connection-profession">{{ connection.profession }}</p>
                   </div>
                 </div>
-                <p class="mb-4 text-sm leading-relaxed text-gray-600">{{ connection.description }}</p>
-                <div class="flex">
+                <p class="connection-description">{{ connection.description }}</p>
+                <div class="connection-actions">
                   <button
                     @click="reconsiderConnection(connection.id)"
-                    class="px-4 py-2 font-medium text-gray-600 transition-all duration-300 border border-gray-300 rounded-lg hover:border-gray-500"
+                    class="action-button secondary"
                   >
                     Reconsider
                   </button>
@@ -194,55 +182,37 @@
     </div>
 
     <!-- Edit Profile Modal -->
-    <div v-if="isEditing" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-      <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-        <h2 class="mb-6 text-xl font-bold text-gray-900">Edit Profile</h2>
+    <div v-if="isEditing" class="modal-overlay">
+      <div class="modal-content">
+        <h2 class="modal-title">Edit Profile</h2>
 
-        <div class="space-y-6">
-          <div>
-            <label class="block mb-2 text-sm font-medium text-gray-700">Bio</label>
+        <div class="form-container">
+          <div class="form-group">
+            <label class="form-label">Bio</label>
             <textarea
               v-model="editProfile.bio"
               rows="4"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              class="form-textarea"
             ></textarea>
           </div>
 
-          <div>
-            <label class="block mb-2 text-sm font-medium text-gray-700">Profile Visibility</label>
-            <div class="flex items-center space-x-4">
+          <div class="form-group">
+            <label class="form-label">Profile Visibility</label>
+            <div class="toggle-container">
               <button
                 @click="toggleVisibility"
-                :class="[
-                  'relative w-12 h-6 rounded-full transition-colors',
-                  editProfile.isPublic ? 'bg-indigo-600' : 'bg-gray-300'
-                ]"
+                :class="['toggle-button', editProfile.isPublic ? 'toggle-active' : '']"
               >
-                <div
-                  :class="[
-                    'absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform',
-                    editProfile.isPublic ? 'translate-x-6' : 'translate-x-0.5'
-                  ]"
-                ></div>
+                <div :class="['toggle-slider', editProfile.isPublic ? 'slider-active' : '']"></div>
               </button>
-              <span>{{ editProfile.isPublic ? 'Public' : 'Private' }}</span>
+              <span class="toggle-label">{{ editProfile.isPublic ? 'Public' : 'Private' }}</span>
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end mt-8 space-x-4">
-          <button
-            @click="cancelEdit"
-            class="px-6 py-2 font-medium text-gray-700 transition-colors border border-gray-300 rounded-lg hover:border-indigo-600 hover:text-indigo-600"
-          >
-            Cancel
-          </button>
-          <button
-            @click="saveProfile"
-            class="px-6 py-2 font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-700"
-          >
-            Save
-          </button>
+        <div class="modal-actions">
+          <button @click="cancelEdit" class="modal-button secondary">Cancel</button>
+          <button @click="saveProfile" class="modal-button primary">Save</button>
         </div>
       </div>
     </div>
@@ -379,29 +349,507 @@ export default {
 </script>
 
 <style>
-.transition-colors {
-  transition-property: color, background-color, border-color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
+/* Base styles */
+.profile-container {
+  min-height: 100vh;
+  padding: 48px 16px;
+  background-color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.transition-transform {
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
+.profile-wrapper {
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
-.translate-x-0\.5 {
-  transform: translateX(0.125rem);
+/* Profile Header */
+.profile-header {
+  margin-bottom: 32px;
+  background-color: white;
+  border: 1px solid #000;
+  border-radius: 8px;
 }
 
-.translate-x-6 {
-  transform: translateX(1.5rem);
+.profile-content {
+  padding: 32px;
+}
+
+.profile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.profile-info {
+  display: flex;
+  align-items: flex-start;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-right: 24px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 50%;
+  background-color: white;
+}
+
+.profile-details {
+  flex: 1;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.profile-name {
+  margin: 0 12px 0 0;
+  font-size: 24px;
+  font-weight: 500;
+  color: #000;
+}
+
+.status-dot {
+  font-size: 16px;
+}
+
+.status-dot.online {
+  color: #000;
+}
+
+.status-dot.offline {
+  color: #666;
+}
+
+.profile-profession {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.profile-company, .profile-location {
+  margin: 0 0 8px 0;
+  color: #666;
+}
+
+.edit-button {
+  padding: 8px 24px;
+  font-weight: 500;
+  color: #000;
+  background-color: white;
+  border: 1px solid #000;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: #000;
+  color: white;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  margin: 0 0 16px 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: #000;
+  text-transform: uppercase;
+}
+
+.bio-text {
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+}
+
+/* Skills */
+.skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-tag {
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+/* Contact */
+.contact-info {
+  display: flex;
+  align-items: center;
+}
+
+.contact-method {
+  margin: 0 0 4px 0;
+  color: #000;
+  font-weight: 500;
+}
+
+.contact-value {
+  margin: 0;
+  color: #666;
+}
+
+/* Connections Section */
+.connections-section {
+  background-color: white;
+  border: 1px solid #000;
+  border-radius: 8px;
+}
+
+.connections-content {
+  padding: 32px;
+}
+
+.connections-title {
+  margin: 0 0 32px 0;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+}
+
+/* Tabs */
+.tabs-container {
+  display: flex;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #000;
+}
+
+.tab-button {
+  padding: 12px 16px;
+  margin-right: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  color: #000;
+}
+
+.tab-button.tab-active {
+  color: #000;
+  border-bottom-color: #000;
+}
+
+/* Connections Grid */
+.connections-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
 
 @media (min-width: 768px) {
-  .md\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .connections-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
+
+.connection-card {
+  padding: 24px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+.connection-card:hover {
+  border-color: #333;
+}
+
+.connection-card.pending {
+  border-color: #666;
+  background-color: #f9f9f9;
+}
+
+.connection-card.rejected {
+  opacity: 0.6;
+  border-color: #ccc;
+}
+
+.connection-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.connection-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  border: 1px solid #333;
+  border-radius: 50%;
+  background-color: white;
+}
+
+.connection-avatar.pending-avatar {
+  border-color: #666;
+  color: #666;
+}
+
+.connection-avatar.rejected-avatar {
+  border-color: #ccc;
+  color: #999;
+}
+
+.connection-info {
+  flex: 1;
+}
+
+.connection-name {
+  margin: 0 0 4px 0;
+  font-weight: 500;
+  color: #000;
+}
+
+.connection-profession {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.connection-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.connection-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  padding: 8px 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-button.primary {
+  color: white;
+  background-color: #000;
+  border: 1px solid #000;
+}
+
+.action-button.primary:hover {
+  background-color: #333;
+}
+
+.action-button.secondary {
+  color: #333;
+  background-color: white;
+  border: 1px solid #333;
+}
+
+.action-button.secondary:hover {
+  color: #000;
+  border-color: #000;
+}
+
+.action-button.accept {
+  color: white;
+  background-color: #000;
+  border: 1px solid #000;
+}
+
+.action-button.accept:hover {
+  background-color: #333;
+}
+
+.action-button.reject {
+  color: #666;
+  background-color: white;
+  border: 1px solid #666;
+}
+
+.action-button.reject:hover {
+  color: #000;
+  border-color: #000;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 48px 0;
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #666;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 448px;
+  padding: 24px;
+  background-color: white;
+  border: 1px solid #000;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modal-title {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+}
+
+.form-container {
+  margin-bottom: 32px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Toggle */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggle-button {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background-color: #ccc;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-button.toggle-active {
+  background-color: #000;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transform: translateX(2px);
+}
+
+.toggle-slider.slider-active {
+  transform: translateX(24px);
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.modal-button {
+  padding: 8px 24px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-button.primary {
+  color: white;
+  background-color: #000;
+  border: 1px solid #000;
+}
+
+.modal-button.primary:hover {
+  background-color: #333;
+}
+
+.modal-button.secondary {
+  color: #333;
+  background-color: white;
+  border: 1px solid #333;
+}
+
+.modal-button.secondary:hover {
+  color: #000;
+  border-color: #000;
 }
 </style>
