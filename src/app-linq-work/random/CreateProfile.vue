@@ -5,290 +5,344 @@
       <div class="progress-fill" :style="{ width: (currentStep / 4) * 100 + '%' }"></div>
     </div>
 
-    <div class="container">
+    <FullScreenLoader v-if="apiLoading" />
+
+    <div v-else class="container">
       <!-- Step 1: Getting Started -->
       <div v-if="currentStep === 1" class="step">
-        <div class="header">
-          <h1>Create Your Profile</h1>
-          <p>Build a professional presence that showcases your expertise and connects you with opportunities.</p>
+        <div class="main-card">
+          <div class="header">
+            <h2>Create Your Profile</h2>
+            <p>Build a professional presence that showcases your expertise and connects you with opportunities.</p>
+          </div>
+
+          <div class="feature-cards">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <Briefcase :size="24" />
+              </div>
+              <div class="feature-content">
+                <h3>Professional Details</h3>
+                <p>Add your experience, skills, and background</p>
+              </div>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <MessageCircle :size="24" />
+              </div>
+              <div class="feature-content">
+                <h3>Contact Preferences</h3>
+                <p>Choose how clients and collaborators reach you</p>
+              </div>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <Lock :size="24" />
+              </div>
+              <div class="feature-content">
+                <h3>Privacy Settings</h3>
+                <p>Control the visibility of your profile</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <div></div>
+            <button @click="nextStep" class="btn btn-primary">Start Building Profile</button>
+          </div>
         </div>
-
-        <div class="cards">
-          <div class="card">
-            <div class="card-icon">💼</div>
-            <div class="card-content">
-              <h3>Professional Details</h3>
-              <p>Add your experience, skills, and background</p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">💬</div>
-            <div class="card-content">
-              <h3>Contact Preferences</h3>
-              <p>Choose how clients and collaborators reach you</p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">🔒</div>
-            <div class="card-content">
-              <h3>Privacy Settings</h3>
-              <p>Control the visibility of your profile</p>
-            </div>
-          </div>
-        </div>
-
-        <button @click="nextStep" class="btn btn-primary btn-block">
-          Start Building Profile
-        </button>
       </div>
-
       <!-- Step 2: Contact Method Selection -->
       <div v-if="currentStep === 2" class="step">
-        <div class="header">
-          <h2>Contact Preferences</h2>
-          <p>How would you like clients to reach you?</p>
-        </div>
-
-        <div class="contact-options">
-          <div 
-            @click="selectContactMethod('whatsapp')"
-            :class="['contact-card', { active: contactMethod === 'whatsapp' }]"
-          >
-            <div class="contact-icon">📱</div>
-            <div class="contact-content">
-              <h3>WhatsApp</h3>
-              <p>Quick messaging and voice calls</p>
-            </div>
-            <div class="radio" :class="{ checked: contactMethod === 'whatsapp' }"></div>
+        <div class="main-card">
+          <div class="header">
+            <h2>Contact Preferences</h2>
+            <p v-if="!verificationRequired && hasExistingProfiles">
+              You have verified contact methods available. Please choose one to continue.
+            </p>
+            <p v-else-if="verificationRequired">
+              How would you like clients to reach you? You'll need to verify your contact method.
+            </p>
+            <p v-else>How would you like clients to reach you?</p>
           </div>
 
-          <div 
-            @click="selectContactMethod('phone')"
-            :class="['contact-card', { active: contactMethod === 'phone' }]"
-          >
-            <div class="contact-icon">📞</div>
-            <div class="contact-content">
-              <h3>Phone Number</h3>
-              <p>Direct phone calls</p>
+          <!-- Show existing verified profiles when verification is not required -->
+          <div v-if="!verificationRequired && hasExistingProfiles" class="contact-options">
+            <!-- WhatsApp profiles -->
+            <div v-if="whatsappProfiles.length > 0">
+              <div
+                v-for="(profile, index) in whatsappProfiles"
+                :key="'whatsapp-' + index"
+                @click="selectExistingProfile('whatsapp', profile)"
+                :class="[
+                  'contact-option',
+                  { active: selectedProfile && selectedProfile.profileId === profile.profileId },
+                ]"
+              >
+                <div class="contact-icon">
+                  <Smartphone :size="24" />
+                </div>
+                <div class="contact-content">
+                  <h3>WhatsApp</h3>
+                  <p>
+                    <!-- {{ profile.name }}   -->
+                    {{ formatPhoneNumber(profile.phone) }}
+                    <!-- <span style="color: #10b981; font-weight: 500"><Check :size="14" /></span> -->
+                  </p>
+                </div>
+                <div
+                  class="radio"
+                  :class="{ checked: selectedProfile && selectedProfile.profileId === profile.profileId }"
+                ></div>
+              </div>
             </div>
-            <div class="radio" :class="{ checked: contactMethod === 'phone' }"></div>
+
+            <!-- Mobile profiles -->
+            <div v-if="mobileProfiles.length > 0">
+              <div
+                v-for="(profile, index) in mobileProfiles"
+                :key="'mobile-' + index"
+                @click="selectExistingProfile('mobile', profile)"
+                :class="[
+                  'contact-option',
+                  { active: selectedProfile && selectedProfile.profileId === profile.profileId },
+                ]"
+              >
+                <div class="contact-icon">
+                  <Phone :size="24" />
+                </div>
+                <div class="contact-content">
+                  <h3>Phone</h3>
+                  <p>
+                    {{ formatPhoneNumber(profile.phone) }}
+                    <!-- <span style="color: #10b981; font-weight: 500">Verified</span> -->
+                  </p>
+                </div>
+                <div
+                  class="radio"
+                  :class="{ checked: selectedProfile && selectedProfile.profileId === profile.profileId }"
+                ></div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div v-if="contactMethod" class="form-group">
-          <label>{{ contactMethod === 'whatsapp' ? 'WhatsApp Number' : 'Phone Number' }}</label>
-          <input 
-            v-model="contactValue" 
-            type="tel" 
-            placeholder="+1 (555) 123-4567"
-            class="input"
-          />
-        </div>
+          <!-- Show regular contact options when verification is required or no existing profiles -->
+          <div v-else class="contact-options">
+            <div
+              v-if="requiredProviders.includes('whatsapp')"
+              @click="selectNewContactMethod('whatsapp')"
+              :class="['contact-option', { active: contactMethod === 'whatsapp' }]"
+            >
+              <div class="contact-icon">
+                <Smartphone :size="24" />
+              </div>
+              <div class="contact-content">
+                <h3>WhatsApp</h3>
+                <p>Quick messaging and voice calls</p>
+              </div>
+              <div class="radio" :class="{ checked: contactMethod === 'whatsapp' }"></div>
+            </div>
 
-        <div class="button-row">
-          <button @click="prevStep" class="btn btn-secondary">
-            ← Back
-          </button>
-          <button 
-            @click="nextStep" 
-            :disabled="!canProceedStep2" 
-            :class="['btn', canProceedStep2 ? 'btn-primary' : 'btn-disabled']"
-          >
-            Continue →
-          </button>
+            <div
+              v-if="requiredProviders.includes('mobile')"
+              @click="selectNewContactMethod('mobile')"
+              :class="['contact-option', { active: contactMethod === 'mobile' }]"
+            >
+              <div class="contact-icon">
+                <Phone :size="24" />
+              </div>
+              <div class="contact-content">
+                <h3>Phone Number</h3>
+                <p>Direct phone calls</p>
+              </div>
+              <div class="radio" :class="{ checked: contactMethod === 'mobile' }"></div>
+            </div>
+          </div>
+
+          <!-- Show input field for new contact method -->
+          <!-- <div v-if="contactMethod && !selectedProfile" class="form-section">
+            <div class="form-group">
+              <label>{{ contactMethod === "whatsapp" ? "WhatsApp Number" : "Phone Number" }}</label>
+              <input v-model="contactValue" type="tel" placeholder="+1 (555) 123-4567" class="input" />
+              <p v-if="verificationRequired" class="verification-note">
+                You'll be redirected to verify this number after clicking continue.
+              </p>
+            </div>
+          </div>-->
+
+          <div class="button-row">
+            <button @click="prevStep" class="btn btn-secondary">Back</button>
+            <button
+              @click="handleStep2Continue"
+              :disabled="!canProceedStep2"
+              :class="['btn', canProceedStep2 ? 'btn-primary' : 'btn-disabled']"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Step 3: Professional Information -->
+      <!-- Step 3: Professional Information -->
       <div v-if="currentStep === 3" class="step">
-        <div class="header">
-          <h2>Professional Information</h2>
-          <p>Tell us about your expertise and background</p>
-        </div>
-
-        <div class="form-section">
-          <h3 class="section-title">Basic Information</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Full Name *</label>
-              <input 
-                v-model="profile.fullName" 
-                placeholder="John Doe"
-                class="input"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>Profession *</label>
-              <input 
-                v-model="profile.profession" 
-                placeholder="Software Engineer"
-                class="input"
-                required
-              />
-            </div>
+        <div class="main-card">
+          <div class="header">
+            <h2>Professional Information</h2>
+            <p>Tell us about your business and expertise</p>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Company</label>
-              <input 
-                v-model="profile.company" 
-                placeholder="Tech Corp Inc."
-                class="input"
-              />
-            </div>
-            <div class="form-group">
-              <label>Location</label>
-              <input 
-                v-model="profile.location" 
-                placeholder="New York, NY"
-                class="input"
-              />
-            </div>
-          </div>
+          <div class="form-section">
+            <h3 class="section-title">Business Information</h3>
 
-          <div class="form-group">
-            <label>Email Address *</label>
-            <input 
-              v-model="profile.email" 
-              type="email" 
-              placeholder="john@example.com"
-              class="input"
-              required
-            />
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h3 class="section-title">About</h3>
-          <div class="form-group">
-            <textarea 
-              v-model="profile.bio" 
-              placeholder="Tell us about your experience, expertise, and what makes you unique in your field..." 
-              rows="4"
-              class="textarea"
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h3 class="section-title">Skills</h3>
-          <div class="skill-input">
-            <input 
-              v-model="skillInput" 
-              placeholder="Add a skill (e.g. JavaScript, Project Management)" 
-              @keyup.enter="addSkill"
-              class="input"
-            />
-            <button @click="addSkill" class="btn btn-primary">Add</button>
-          </div>
-          
-          <div v-if="profile.skills.length > 0" class="skills">
-            <span
-              v-for="(skill, index) in profile.skills" 
-              :key="index"
-              @click="removeSkill(index)"
-              class="skill-tag"
-            >
-              {{ skill }} ×
-            </span>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h3 class="section-title">Privacy Settings</h3>
-          <div class="privacy-toggle">
-            <div class="privacy-info">
-              <div class="privacy-title">
-                {{ profile.isPublic ? '🌍 Public Profile' : '🔒 Private Profile' }}
+            <div class="form-row">
+              <div class="form-group">
+                <label>Business Name *</label>
+                <input v-model="profile.businessName" placeholder="Tech Solutions Inc." class="input" required />
               </div>
-              <p>{{ profile.isPublic ? 'Your profile will be discoverable and visible to everyone' : 'Only people with direct access can view your profile' }}</p>
+              <div class="form-group">
+                <label>Title *</label>
+                <input v-model="profile.title" placeholder="Software Engineer" class="input" required />
+              </div>
             </div>
-            <label class="toggle">
-              <input type="checkbox" v-model="profile.isPublic">
-              <span class="toggle-slider"></span>
-            </label>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Category *</label>
+                <input v-model="profile.category" placeholder="Technology, Healthcare, etc." class="input" required />
+              </div>
+              <div class="form-group">
+                <label>SubCategory *</label>
+                <input v-model="profile.subCategory" placeholder="Sub Category" class="input" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Website</label>
+              <input v-model="profile.website" type="url" placeholder="https://example.com" class="input" />
+            </div>
+
+            <div class="form-group">
+              <label>Address</label>
+              <input v-model="profile.address" placeholder="123 Main St, City, State" class="input" />
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">Description</h3>
+            <div class="form-group">
+              <label>Business Description *</label>
+              <textarea
+                v-model="profile.businessDesc"
+                placeholder="Describe your business, services, and what makes you unique..."
+                rows="4"
+                class="textarea"
+                required
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label>Additional Description</label>
+              <textarea
+                v-model="profile.description"
+                placeholder="Any additional information about your services or expertise..."
+                rows="3"
+                class="textarea"
+                required
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button @click="prevStep" class="btn btn-secondary">Back</button>
+            <button
+              @click="nextStep"
+              :disabled="!canProceedStep3"
+              :class="['btn', canProceedStep3 ? 'btn-primary' : 'btn-disabled']"
+            >
+              Continue
+            </button>
           </div>
         </div>
+      </div>
 
-        <div class="button-row">
-          <button @click="prevStep" class="btn btn-secondary">
-            ← Back
-          </button>
-          <button 
-            @click="nextStep" 
-            :disabled="!canProceedStep3" 
-            :class="['btn', canProceedStep3 ? 'btn-primary' : 'btn-disabled']"
-          >
-            Create Profile →
-          </button>
+      <!-- Step 4: Privacy Settings -->
+      <div v-if="currentStep === 4" class="step">
+        <div class="main-card">
+          <div class="header">
+            <h2>Privacy Settings</h2>
+            <p>Control how your profile is viewed and discovered</p>
+          </div>
+
+          <div class="form-section">
+            <!-- <h3 class="section-title">Profile Visibility</h3> -->
+
+            <div class="privacy-wrapper">
+              <div class="privacy-toggle">
+                <div class="privacy-info">
+                  <div class="privacy-title">
+                    <Globe v-if="profile.isPublic" :size="16" style="display: inline; margin-right: 8px" />
+                    <Shield v-else :size="16" style="display: inline; margin-right: 8px" />
+                    {{ profile.isPublic ? "Public Profile" : "Private Profile" }}
+                  </div>
+                  <p>
+                    {{
+                      profile.isPublic
+                        ? "Your profile will be discoverable and visible to everyone"
+                        : "Only people with direct access can view your profile"
+                    }}
+                  </p>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" v-model="profile.isPublic" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="privacy-toggle">
+                <div class="privacy-info">
+                  <div class="privacy-title">
+                    <Search v-if="profile.searchable" :size="16" style="display: inline; margin-right: 8px" />
+                    <EyeOff v-else :size="16" style="display: inline; margin-right: 8px" />
+                    {{ profile.searchable ? "Searchable" : "Not Searchable" }}
+                  </div>
+                  <p>
+                    {{
+                      profile.searchable
+                        ? "Your profile can be found in search results"
+                        : "Your profile won't appear in search results"
+                    }}
+                  </p>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" v-model="profile.searchable" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button @click="prevStep" class="btn btn-secondary">Back</button>
+            <button @click="nextStep" class="btn btn-primary">Create Profile</button>
+          </div>
         </div>
       </div>
 
       <!-- Step 4: Success Screen -->
-      <div v-if="currentStep === 4" class="step">
-        <div class="success-header">
-          <div class="success-icon">✓</div>
-          <h2>Profile Created Successfully</h2>
-          <p>Your professional profile is now ready to attract opportunities and showcase your expertise.</p>
-        </div>
-
-        <div class="profile-preview">
-          <div class="profile-header">
-            <div class="avatar">{{ getInitials(profile.fullName) }}</div>
-            <div class="profile-info">
-              <div class="name-status">
-                <h3>{{ profile.fullName }}</h3>
-                <span :class="['status', profile.isPublic ? 'public' : 'private']"></span>
-              </div>
-              <p class="profession">{{ profile.profession }}</p>
-              <div class="details">
-                <p v-if="profile.company">{{ profile.company }}</p>
-                <p v-if="profile.location">{{ profile.location }}</p>
-                <p>{{ profile.email }}</p>
-              </div>
+      <div v-if="currentStep === 5" class="step">
+        <div class="main-card">
+          <div class="success-header">
+            <div class="success-icon">
+              <Check :size="24" />
             </div>
+            <h2>Profile Created Successfully</h2>
+            <p>Your professional profile is now ready to attract opportunities and showcase your expertise.</p>
           </div>
 
-          <div v-if="profile.bio" class="profile-section">
-            <h4>About</h4>
-            <p>{{ profile.bio }}</p>
+          <div class="button-row">
+            <button class="btn btn-primary">View Full Profile</button>
+            <button class="btn btn-secondary">Share Profile</button>
           </div>
-
-          <div v-if="profile.skills && profile.skills.length > 0" class="profile-section">
-            <h4>Skills</h4>
-            <div class="skills">
-              <span
-                v-for="(skill, index) in profile.skills" 
-                :key="index"
-                class="skill-tag readonly"
-              >
-                {{ skill }}
-              </span>
-            </div>
-          </div>
-
-          <div class="profile-section">
-            <h4>Contact</h4>
-            <div class="contact-info">
-              <div class="contact-method">
-                {{ contactMethod === 'whatsapp' ? '📱' : '📞' }}
-              </div>
-              <div>
-                <p class="contact-type">{{ contactMethod === 'whatsapp' ? 'WhatsApp' : 'Phone' }}</p>
-                <p class="contact-value">{{ contactValue }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="button-row">
-          <button class="btn btn-primary">View Full Profile</button>
-          <button class="btn btn-secondary">Share Profile</button>
         </div>
       </div>
     </div>
@@ -296,42 +350,138 @@
 </template>
 
 <script>
+import {
+  Briefcase,
+  MessageCircle,
+  Lock,
+  Smartphone,
+  Phone,
+  Check,
+  Globe,
+  Shield,
+  Loader,
+  Search,
+  EyeOff,
+} from "lucide-vue";
+// Import both functions from your apiService file
+import { getRequiredProvider, createProfile } from "../api/profileCreate";
+import FullScreenLoader from "../components/Loader.vue";
+
 export default {
-  name: 'ProfileCreator',
+  components: {
+    Briefcase,
+    MessageCircle,
+    Lock,
+    Phone,
+    Check,
+    Globe,
+    Shield,
+    Search,
+    EyeOff,
+    FullScreenLoader,
+    Smartphone, // Ensure Smartphone is also imported and registered if used
+  },
+  name: "UnifiedProfileCreator",
   data() {
     return {
       currentStep: 1,
-      contactMethod: '',
-      contactValue: '',
-      skillInput: '',
+      contactMethod: "",
+      contactValue: "",
+      selectedProfile: null,
+      skillInput: "",
       profile: {
-        fullName: '',
-        profession: '',
-        company: '',
-        location: '',
-        email: '',
-        bio: '',
-        skills: [],
-        isPublic: true
-      }
-    }
+        businessName: "",
+        title: "",
+        category: "",
+        website: "",
+        address: "",
+        businessDesc: "",
+        description: "",
+        isPublic: true,
+        searchable: true,
+        // Add properties for full name, profession, company, location, email if needed for success screen
+        fullName: "", // Assuming you'll add a field for full name in a previous step or derive it
+        profession: "", // Assuming you'll add a field for profession
+        company: "", // Assuming you'll add a field for company
+        location: "", // Will be derived from address or geolocation
+        email: "", // Assuming you'll add a field for email
+      },
+      apiData: null,
+      apiLoading: false,
+      apiError: null,
+      verificationRequired: false,
+      requiredProviders: [],
+      existingProfiles: [],
+      userLatitude: null, // To store user's latitude
+      userLongitude: null, // To store user's longitude
+    };
   },
   computed: {
     canProceedStep2() {
-      return this.contactMethod && this.contactValue.trim();
+      // Can proceed if either an existing profile is selected or new contact method is provided
+      return this.selectedProfile || this.contactMethod;
+      //&& this.contactValue.trim()
     },
     canProceedStep3() {
-      return this.profile.fullName.trim() &&
-             this.profile.profession.trim() &&
-             this.profile.email.trim();
-    }
+      return (
+        this.profile.businessName.trim() &&
+        this.profile.title.trim() &&
+        this.profile.category.trim() &&
+        this.profile.businessDesc.trim() &&
+        this.profile.description.trim()
+      );
+    },
+    hasExistingProfiles() {
+      return this.existingProfiles && this.existingProfiles.length > 0;
+    },
+    whatsappProfiles() {
+      return this.existingProfiles.filter((profile) => profile.provider === "whatsapp");
+    },
+    mobileProfiles() {
+      return this.existingProfiles.filter((profile) => profile.provider === "mobile");
+    },
+    finalContactMethod() {
+      if (this.selectedProfile) {
+        return this.selectedProfile.provider;
+      }
+      return this.contactMethod;
+    },
+    finalContactValue() {
+      if (this.selectedProfile) {
+        return this.formatPhoneNumber(this.selectedProfile.phone);
+      }
+      return this.contactValue;
+    },
+  },
+  async mounted() {
+    await this.fetchRequiredProviderData();
+    // Attempt to get user's location on mount, but don't block the UI
+    this.getUserLocation();
   },
   methods: {
     getInitials(name) {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+      if (!name) return "";
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
     },
-    nextStep() {
-      if (this.currentStep < 4) {
+    formatPhoneNumber(phone) {
+      // Basic phone number formatting - you can enhance this based on your needs
+      if (!phone) return "";
+      // Remove country code if it starts with 91 (India)
+      if (phone.startsWith("91") && phone.length > 10) {
+        return phone.substring(2);
+      }
+      return phone;
+    },
+    async nextStep() {
+      // Logic to handle profile creation when on the last step (Step 4)
+      if (this.currentStep === 4) {
+        await this.handleCreateProfile();
+      }
+      if (this.currentStep < 5) {
         this.currentStep++;
       }
     },
@@ -340,37 +490,182 @@ export default {
         this.currentStep--;
       }
     },
-    selectContactMethod(method) {
+    selectNewContactMethod(method) {
       this.contactMethod = method;
+      this.selectedProfile = null; // Clear selected profile when choosing new method
+    },
+    selectExistingProfile(type, profile) {
+      this.selectedProfile = profile;
+      this.contactMethod = ""; // Clear new contact method when selecting existing profile
+      this.contactValue = "";
+    },
+    async handleStep2Continue() {
+      if (this.verificationRequired && !this.selectedProfile) {
+        // Redirect to verification page for new contact method
+        const provider = this.contactMethod;
+        const returnUrl = encodeURIComponent(window.location.origin + "/linq/work/create");
+        window.location.href = `https://uat.truelinq.com/linq/app/v1/connect/${provider}?redirect=${returnUrl}`;
+      } else {
+        // Proceed to next step
+        this.nextStep();
+      }
     },
     addSkill() {
       if (this.skillInput.trim() && !this.profile.skills.includes(this.skillInput.trim())) {
         this.profile.skills.push(this.skillInput.trim());
-        this.skillInput = '';
+        this.skillInput = "";
       }
     },
     removeSkill(index) {
       this.profile.skills.splice(index, 1);
-    }
-  }
-}
+    },
+    async fetchRequiredProviderData() {
+      this.apiLoading = true;
+      this.apiError = null;
+      try {
+        const response = await getRequiredProvider();
+
+        const contentType = response.headers["content-type"];
+        if (contentType && contentType.includes("text/html")) {
+          console.log("Detected HTML response, redirecting...");
+          // window.location.href = response.request.responseURL;
+        } else {
+          this.apiData = response.data.results[0];
+          console.log("API Data:", this.apiData);
+
+          // Extract data from API response
+          this.verificationRequired = this.apiData.verificationRequired || false;
+          this.requiredProviders = this.apiData.required || [];
+          this.existingProfiles = this.apiData.profile || [];
+
+          console.log("Verification Required:", this.verificationRequired);
+          console.log("Required Providers:", this.requiredProviders);
+          console.log("Existing Profiles:", this.existingProfiles);
+        }
+      } catch (error) {
+        this.apiError = error;
+        console.error("Error fetching provider data:", error);
+      } finally {
+        this.apiLoading = false;
+      }
+    },
+    // New method to get user's geolocation
+    getUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            this.userLatitude = position.coords.latitude.toString();
+            this.userLongitude = position.coords.longitude.toString();
+            console.log("User location:", this.userLatitude, this.userLongitude);
+          },
+          (error) => {
+            console.warn("Geolocation error:", error.message);
+            // Optionally, you can set a flag here if you want to show a message to the user
+            // that location could not be obtained.
+            this.userLatitude = null;
+            this.userLongitude = null;
+          },
+          {
+            enableHighAccuracy: false, // Set to true if high accuracy is critical
+            timeout: 5000, // Maximum time to wait for a position
+            maximumAge: 0, // Accept a cached position no older than 0 milliseconds
+          }
+        );
+      } else {
+        console.warn("Geolocation is not supported by this browser.");
+        this.userLatitude = null;
+        this.userLongitude = null;
+      }
+    },
+    // New method to handle profile creation
+    async handleCreateProfile() {
+      this.apiLoading = true;
+      this.apiError = null;
+
+      try {
+        const profilePayload = {
+          address: "27 Pipe Lane, Royapettah, Chennai, Tamil Nadu, 600014",
+          businessDesc:
+            "Reliable plumbing service provider offering residential and commercial repairs, installations, and maintenance.",
+          businessName: "Mabetone Basis Integris",
+          category: "Home Services",
+          description: "Professional plumbing solutions with quick turnaround times and long-lasting results.",
+          title: "Plumbing & Maintenance Services",
+          isPublic: true,
+          searchable: true,
+          website: "https://mabetoneplumbing.in",
+          latitude: 13.0531,
+          longitude: 80.2652,
+        };
+
+        // const profilePayload = {
+        //   address: this.profile.address,
+        //   businessDesc: this.profile.businessDesc,
+        //   businessName: this.profile.businessName,
+        //   category: this.profile.category,
+        //   description: this.profile.description,
+        //   title: this.profile.title,
+        //   isPublic: this.profile.isPublic,
+        //   searchable: this.profile.searchable,
+        //   website: this.profile.website, // Include website even if optional
+        // };
+
+        // Add contact information and profileIds based on selection
+        if (this.selectedProfile) {
+          // If an existing profile is selected, use its phone and construct profileIds
+          profilePayload.contact = this.selectedProfile.phone;
+          profilePayload.profileIds = [`${this.selectedProfile.provider}:${this.selectedProfile.profileId}`];
+        } else if (this.contactMethod && this.contactValue.trim()) {
+          // If a new contact method is entered, use its value and an empty profileIds array
+          profilePayload.contact = this.contactValue.trim();
+          profilePayload.profileIds = []; // New contacts won't have a profileId yet
+        } else {
+          // Fallback or error if no contact method is selected/provided
+          console.error("No contact method selected or provided for profile creation.");
+          this.apiError = "Please select or provide a contact method.";
+          this.apiLoading = false;
+          return; // Prevent API call if contact is missing
+        }
+
+        // Add latitude and longitude if available
+        if (this.userLatitude && this.userLongitude) {
+          profilePayload.latitude = this.userLatitude;
+          profilePayload.longitude = this.userLongitude;
+        }
+
+        // Assuming subCategory is derived or hardcoded, if not, add a field for it
+        profilePayload.subCategory = this.profile.category; // Using category as subCategory for now, adjust as needed
+
+        console.log("Sending profile payload:", profilePayload);
+        const response = await createProfile(profilePayload);
+        console.log("Profile creation response:", response.data);
+
+        // Populate success screen data if needed (e.g., from response or current profile state)
+        this.profile.fullName = this.profile.businessName; // Example: using business name as full name
+        this.profile.profession = this.profile.title; // Example: using title as profession
+        this.profile.company = this.profile.businessName; // Example: using business name as company
+        this.profile.location = this.profile.address; // Example: using address as location
+        this.profile.email = "example@example.com"; // Placeholder, you might have an email field
+
+        // Proceed to the success step
+        this.currentStep = 5;
+      } catch (error) {
+        this.apiError = error;
+        console.error("Error creating profile:", error);
+        // You might want to show a user-friendly error message here
+      } finally {
+        this.apiLoading = false;
+      }
+    },
+  },
+};
 </script>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
 
-.app {
-  min-height: 100vh;
-  background: #fff;
-  color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  padding-top: 4px;
-}
 
 .container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -395,9 +690,11 @@ export default {
   animation: fadeIn 0.5s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.main-card {
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 30px;
 }
 
 .header {
@@ -413,83 +710,83 @@ export default {
 }
 
 .header h2 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 
 .header p {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #666;
   max-width: 480px;
   margin: 0 auto;
   line-height: 1.5;
 }
 
-.cards {
+.feature-cards {
   margin-bottom: 40px;
 }
 
-.card {
+.feature-card {
   display: flex;
   align-items: center;
   flex-direction: row;
-  padding: 24px;
+  padding: 20px;
+  background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   margin-bottom: 16px;
-  cursor: pointer;
   transition: all 0.2s ease;
-  background: #fff;
 }
 
-.card:hover {
+.feature-card:hover {
   border-color: #ccc;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.card-icon {
-  font-size: 2rem;
-  margin-right: 20px;
-  min-width: 48px;
+.feature-icon {
+  font-size: 1.5rem;
+  margin-right: 16px;
+  min-width: 40px;
   text-align: center;
 }
 
-.card-content h3 {
-  font-size: 1.2rem;
+.feature-content h3 {
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
-.card-content p {
+.feature-content p {
   color: #666;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 .contact-options {
   margin-bottom: 30px;
 }
 
-.contact-card {
+.contact-option {
   display: flex;
   align-items: center;
   padding: 20px;
+  background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   margin-bottom: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fff;
 }
 
-.contact-card:hover {
+.contact-option:hover {
   border-color: #ccc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.contact-card.active {
+.contact-option.active {
   border-color: #000;
   background: #f8f8f8;
 }
@@ -506,7 +803,7 @@ export default {
 }
 
 .contact-content h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -514,6 +811,7 @@ export default {
 .contact-content p {
   color: #666;
   font-size: 0.9rem;
+  margin: 0;
 }
 
 .radio {
@@ -529,7 +827,7 @@ export default {
 }
 
 .radio.checked::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -541,7 +839,7 @@ export default {
 }
 
 .form-section {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .section-title {
@@ -550,7 +848,7 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #666;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .form-group {
@@ -577,7 +875,8 @@ label {
   color: #333;
 }
 
-.input, .textarea {
+.input,
+.textarea {
   width: 100%;
   padding: 12px 16px;
   background: #fff;
@@ -588,12 +887,14 @@ label {
   transition: border-color 0.2s ease;
 }
 
-.input:focus, .textarea:focus {
+.input:focus,
+.textarea:focus {
   outline: none;
   border-color: #000;
 }
 
-.input::placeholder, .textarea::placeholder {
+.input::placeholder,
+.textarea::placeholder {
   color: #999;
 }
 
@@ -640,12 +941,18 @@ label {
   background: #f8f8f8;
 }
 
+.privacy-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .privacy-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  background: #f8f8f8;
+  background: #fff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
 }
@@ -712,11 +1019,11 @@ label {
 }
 
 .btn {
-  padding: 14px 24px;
+  padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
@@ -756,15 +1063,15 @@ label {
 }
 
 .button-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 16px;
-  margin-top: 40px;
+  justify-content: space-between;
+  margin-top: 30px;
 }
 
 @media (max-width: 600px) {
   .button-row {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
 
@@ -774,32 +1081,34 @@ label {
 }
 
 .success-icon {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   background: #000;
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   margin: 0 auto 20px;
 }
 
 .profile-preview {
-  background: #f8f8f8;
+  background: #fff;
   border: 1px solid #e0e0e0;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 30px;
   margin-bottom: 30px;
 }
 
 .profile-header {
+  margin-bottom: 30px;
+}
+
+.profile-info {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 30px;
 }
 
 .avatar {
@@ -813,10 +1122,11 @@ label {
   justify-content: center;
   font-size: 1.5rem;
   font-weight: bold;
+  margin-right: 20px;
   flex-shrink: 0;
 }
 
-.profile-info {
+.profile-details {
   flex-grow: 1;
 }
 
@@ -833,17 +1143,17 @@ label {
   margin: 0;
 }
 
-.status {
+.status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
 
-.status.public {
+.status-dot.public {
   background: #4ade80;
 }
 
-.status.private {
+.status-dot.private {
   background: #888;
 }
 
@@ -867,18 +1177,10 @@ label {
   margin-bottom: 0;
 }
 
-.profile-section h4 {
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #666;
-  margin-bottom: 12px;
-}
-
-.profile-section p {
+.bio-text {
   color: #333;
   line-height: 1.6;
+  margin: 0;
 }
 
 .contact-info {

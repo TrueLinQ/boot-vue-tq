@@ -7,7 +7,7 @@ export default BootRouter.route({
     {
       path: "/",
       name: "root",
-      component: () => import("./random/CreateProfile.vue"),
+      component: () => import("./random/SearchPage.vue"),
     },
     {
       path: "/create",
@@ -18,6 +18,16 @@ export default BootRouter.route({
       path: "/profile",
       name: "profile",
       component: () => import("./random/MyProfile.vue"),
+    },
+    {
+      path: "/profile/:id",
+      name: "profile",
+      component: () => import("./random/UserProfile.vue"),
+    },
+    {
+      path: "/search",
+      name: "search",
+      component: () => import("./random/SearchPage.vue"),
     },
     // Dashboards
     // {
