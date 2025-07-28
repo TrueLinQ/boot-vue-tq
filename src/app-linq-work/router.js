@@ -7,17 +7,37 @@ export default BootRouter.route({
     {
       path: "/",
       name: "root",
-      component: () => import("./random/CreateProfile.vue"),
+      component: () => import("./random/SearchPage.vue"),
     },
     {
       path: "/create",
       name: "create",
       component: () => import("./random/CreateProfile.vue"),
     },
-    {
+    // {
+    //   path: "/profile",
+    //   name: "profile",
+    //   component: () => import("./random/MyProfile.vue"),
+    // },
+      {
       path: "/profile",
       name: "profile",
-      component: () => import("./random/MyProfile.vue"),
+      component: () => import("./random/OldMyProfile.vue"),
+    },
+    {
+      path: "/profile/:id",
+      name: "profile",
+      component: () => import("./random/UserProfile.vue"),
+    },
+    {
+      path: "/search",
+      name: "search",
+      component: () => import("./random/SearchPage.vue"),
+    },
+    {
+      path: "/connections",
+      name: "connections",
+      component: () => import("./random/Connections.vue"),
     },
     // Dashboards
     // {
