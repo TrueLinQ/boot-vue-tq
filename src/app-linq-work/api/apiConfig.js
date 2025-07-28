@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'https://app.truelinq.com/linq/api';
+import { API_BASE_URL } from '../constants/constants';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -274,6 +274,13 @@
             <p>Control how your profile is viewed and discovered</p>
           </div>
 
+          <div v-if="apiError" class="error-message">
+            <div class="error-content">
+              <AlertCircle :size="16" class="error-icon" />
+              <span>{{ apiError }}</span>
+            </div>
+          </div>
+
           <div class="form-section">
             <!-- <h3 class="section-title">Profile Visibility</h3> -->
 
@@ -340,7 +347,8 @@
           </div>
 
           <div class="button-row">
-            <button class="btn btn-primary">View Full Profile</button>
+            <router-link to="/profile" class="btn btn-primary"> View Full Profile </router-link>
+
             <button class="btn btn-secondary">Share Profile</button>
           </div>
         </div>
@@ -362,10 +370,12 @@ import {
   Loader,
   Search,
   EyeOff,
+  AlertCircle,
 } from "lucide-vue";
 // Import both functions from your apiService file
 import { getRequiredProvider, createProfile } from "../api/profileCreate";
 import FullScreenLoader from "../components/Loader.vue";
+import { APP_CONNECT_URL } from "../constants/constants";
 
 export default {
   components: {
@@ -379,7 +389,8 @@ export default {
     Search,
     EyeOff,
     FullScreenLoader,
-    Smartphone, // Ensure Smartphone is also imported and registered if used
+    Smartphone,
+    AlertCircle,
   },
   name: "UnifiedProfileCreator",
   data() {
@@ -480,8 +491,7 @@ export default {
       // Logic to handle profile creation when on the last step (Step 4)
       if (this.currentStep === 4) {
         await this.handleCreateProfile();
-      }
-      if (this.currentStep < 5) {
+      } else if (this.currentStep < 5) {
         this.currentStep++;
       }
     },
@@ -504,7 +514,7 @@ export default {
         // Redirect to verification page for new contact method
         const provider = this.contactMethod;
         const returnUrl = encodeURIComponent(window.location.origin + "/linq/work/create");
-        window.location.href = `https://uat.truelinq.com/linq/app/v1/connect/${provider}?redirect=${returnUrl}`;
+        window.location.href = `${APP_CONNECT_URL}/${provider}?redirect=${returnUrl}`;
       } else {
         // Proceed to next step
         this.nextStep();
@@ -583,32 +593,35 @@ export default {
       this.apiError = null;
 
       try {
-        const profilePayload = {
-          address: "27 Pipe Lane, Royapettah, Chennai, Tamil Nadu, 600014",
-          businessDesc:
-            "Reliable plumbing service provider offering residential and commercial repairs, installations, and maintenance.",
-          businessName: "Mabetone Basis Integris",
-          category: "Home Services",
-          description: "Professional plumbing solutions with quick turnaround times and long-lasting results.",
-          title: "Plumbing & Maintenance Services",
-          isPublic: true,
-          searchable: true,
-          website: "https://mabetoneplumbing.in",
-          latitude: 13.0531,
-          longitude: 80.2652,
-        };
-
         // const profilePayload = {
-        //   address: this.profile.address,
-        //   businessDesc: this.profile.businessDesc,
-        //   businessName: this.profile.businessName,
-        //   category: this.profile.category,
-        //   description: this.profile.description,
-        //   title: this.profile.title,
-        //   isPublic: this.profile.isPublic,
-        //   searchable: this.profile.searchable,
-        //   website: this.profile.website, // Include website even if optional
+        //   address: "27 Pipe Lane, Royapettah, Chennai, Tamil Nadu, 600014",
+        //   businessDesc:
+        //     "Reliable plumbing service provider offering residential and commercial repairs, installations, and maintenance.",
+        //   businessName: "Mabetone Basis Integris",
+        //   category: "Home Services",
+        //   description: "Professional plumbing solutions with quick turnaround times and long-lasting results.",
+        //   title: "Plumbing & Maintenance Services",
+        //   isPublic: true,
+        //   searchable: true,
+        //   website: "https://mabetoneplumbing.in",
+        //   latitude: 13.0531,
+        //   longitude: 80.2652,
         // };
+
+        const profilePayload = {
+          address: this.profile.address,
+          businessDesc: this.profile.businessDesc,
+          businessName: this.profile.businessName,
+          category: this.profile.category,
+          description: this.profile.description,
+          title: this.profile.title,
+          isPublic: this.profile.isPublic,
+          searchable: this.profile.searchable,
+          website: this.profile.website, // Include website even if optional
+          // Use user location if available, otherwise default to Mumbai coordinates
+          latitude: this.userLatitude || 19.076, // Mumbai latitude
+          longitude: this.userLongitude || 72.8777, // Mumbai longitude
+        };
 
         // Add contact information and profileIds based on selection
         if (this.selectedProfile) {
@@ -618,7 +631,8 @@ export default {
         } else if (this.contactMethod && this.contactValue.trim()) {
           // If a new contact method is entered, use its value and an empty profileIds array
           profilePayload.contact = this.contactValue.trim();
-          profilePayload.profileIds = []; // New contacts won't have a profileId yet
+          profilePayload.profileIds = [];
+          // New contacts won't have a profileId yet
         } else {
           // Fallback or error if no contact method is selected/provided
           console.error("No contact method selected or provided for profile creation.");
@@ -650,8 +664,12 @@ export default {
         // Proceed to the success step
         this.currentStep = 5;
       } catch (error) {
-        this.apiError = error;
+        this.apiError =
+          error?.response?.data?.message ||
+          error.message ||
+          "Failed to create profile. Please check your information and try again.";
         console.error("Error creating profile:", error);
+
         // You might want to show a user-friendly error message here
       } finally {
         this.apiLoading = false;
@@ -662,8 +680,25 @@ export default {
 </script>
 
 <style scoped>
+.error-message {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
 
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dc2626;
+  font-size: 14px;
+}
 
+.error-icon {
+  flex-shrink: 0;
+}
 .container {
   max-width: 800px;
   margin: 0 auto;

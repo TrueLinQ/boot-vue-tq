@@ -1,14 +1,10 @@
 <template>
   <div class="app">
     <div class="container">
-      <!-- Search Section -->
-      <div class="search-card">
-        <div class="header">
-          <h2>Search Professionals</h2>
-          <p>Find and connect with professionals in your field</p>
-        </div>
+      <!-- Search Section - Replace your existing search-card div with this -->
 
-        <!-- Search Bar -->
+      <!-- Search Section - Replace your existing search-card div with this -->
+      <div class="search-card">
         <div class="search-section">
           <div class="search-bar">
             <input
@@ -18,14 +14,19 @@
               class="search-input"
               @keyup.enter="performSearch(false)"
             />
-            <button @click="performSearch(false)" class="search-btn" :disabled="loading">
-              <Loader v-if="loading" class="loader-icon" :size="18" />
-              <Search v-else :size="18" />
-            </button>
+            <div class="search-filter-container">
+              <button @click="performSearch(false)" class="search-btn" :disabled="loading">
+                <Loader v-if="loading" class="loader-icon" :size="18" />
+                <Search v-else :size="18" />
+              </button>
+              <button @click="toggleFilters" class="filter-btn" :class="{ active: showFilters }">
+                <Funnel :size="18" />
+              </button>
+            </div>
           </div>
 
-          <!-- Filter Section -->
-          <div class="filter-section">
+          <!-- Filter Section - Only shown when showFilters is true -->
+          <div v-if="showFilters" class="filter-section">
             <div class="filter-group">
               <label class="filter-label">Category</label>
               <select v-model="selectedCategory" @change="performSearch(false)" class="filter-select">
@@ -41,7 +42,7 @@
             </div>
 
             <div class="filter-group">
-              <button @click="clearFilters" class="btn btn-secondary">Clear All Filters</button>
+              <button @click="clearFilters" class="btn btn-secondary">Clear Filters</button>
             </div>
           </div>
         </div>
@@ -58,7 +59,7 @@
                   : `${totalCount} Professional${totalCount !== 1 ? "s" : ""} Found`
               }}
             </h3>
-            <button @click="goToCreateProfile" class="btn btn-primary create-profile-btn">
+            <button v-if="hasProfile === false" @click="goToCreateProfile" class="btn btn-primary create-profile-btn">
               <span>Join as Professional</span>
               <ArrowRight :size="16" />
             </button>
@@ -91,7 +92,6 @@
             <div class="card-header">
               <div class="professional-avatar">
                 {{ getInitials(professional.businessDetails?.title) }}
-                  
               </div>
               <div class="professional-info">
                 <h4>{{ professional.businessDetails?.title }}</h4>
@@ -144,15 +144,16 @@
 </template>
 
 <script>
-import { Search, Loader,ArrowRight } from "lucide-vue";
-import { searchProfessionals, sendConnection } from "../api/profileCreate";
+import { Search, Loader, ArrowRight, Funnel } from "lucide-vue";
+import { getProfile, searchProfessionals, sendConnection } from "../api/profileCreate";
 
 export default {
   name: "SearchProfessionals",
   components: {
     Search,
     Loader,
-    ArrowRight
+    ArrowRight,
+    Funnel,
   },
   data() {
     return {
@@ -160,6 +161,7 @@ export default {
       selectedCategory: "",
       loading: false,
       error: null,
+      showFilters: false,
 
       professionals: [],
       totalCount: 0,
@@ -275,6 +277,20 @@ export default {
       }
     },
 
+    async loadProfile() {
+      console.log("Loading profile data...");
+      try {
+        const response = await getProfile();
+        console.log("Loading profile response data...", response);
+        const profileData = response?.data?.results?.[0];
+        this.hasProfile = !!profileData;
+      } catch (error) {
+        console.error("Profile load error:", error);
+        this.hasProfile = false; // Assume no profile if error
+        this.profileError = true;
+      }
+    },
+
     goToProfile() {
       this.$router.push("/work/profile");
     },
@@ -286,9 +302,14 @@ export default {
       this.performSearch(true);
     },
 
+    toggleFilters() {
+      this.showFilters = !this.showFilters;
+    },
+
     clearFilters() {
       this.searchQuery = "";
       this.selectedCategory = "";
+      this.showFilters = false;
       // Reset pagination state before performing search
       this.startIndex = 0;
       this.professionals = [];
@@ -360,12 +381,97 @@ export default {
   },
 
   mounted() {
-    this.performSearch(false); // Explicitly pass false for initial load
+    this.performSearch(false); // Explicitly pass false for initial
+    //  this.loadProfile();load
+    this.loadProfile();
   },
 };
 </script>
 
 <style scoped>
+.search-card {
+  margin-bottom: 20px; /* Reduced from 30px */
+}
+
+.search-filter-container{
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced gap since we have two buttons now */
+}
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Reduced from 20px */
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced gap since we have two buttons now */
+}
+
+.search-input {
+  flex: 1;
+  padding: 16px 16px 16px 16px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #000;
+  transition: border-color 0.2s ease;
+}
+
+.search-btn,
+.filter-btn {
+  padding: 16px;
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.filter-btn:hover {
+  background: #eee;
+  color: #333;
+}
+
+.filter-btn.active {
+  /* background: #000;
+  color: #fff;
+  border-color: #000; */
+}
+
+/* .search-btn {
+  padding: 16px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-width: 50px;
+} */
+
+.filter-section {
+  display: grid;
+  grid-template-columns: 1fr auto; /* Changed to put button on the right */
+  gap: 16px;
+  align-items: end;
+}
+
+.filter-group:last-child {
+  justify-self: end; /* Align button to the right */
+}
 
 .container {
   max-width: 800px;
@@ -373,7 +479,6 @@ export default {
   padding: 40px 20px;
 }
 
-.search-card,
 .results-card {
   background: #f8f8f8;
   border: 1px solid #e0e0e0;
@@ -419,7 +524,7 @@ export default {
 
 .search-input {
   flex: 1;
-  padding: 16px 16px 16px 16px;
+  padding: 14px;
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
@@ -437,23 +542,9 @@ export default {
   color: #999;
 }
 
-.search-btn {
-  padding: 16px;
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  min-width: 50px;
-}
-
-.search-btn:hover:not(:disabled) {
+/* .search-btn:hover:not(:disabled) {
   background: #333;
-}
+} */
 
 .search-btn:disabled {
   background: #ccc;
@@ -676,8 +767,15 @@ export default {
   line-height: 1.4;
   margin: 0 0 16px 0;
   word-wrap: break-word;
-}
 
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 👈 limits text to 2 lines for WebKit-based browsers */
+  line-clamp: 2; /* 👈 limits text to 2 lines for other browsers */
+  -webkit-box-orient: vertical;
+  box-orient: vertical; /* 👈 standard property for compatibility */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .meta-info {
   display: flex;
   align-items: center;
@@ -798,7 +896,7 @@ export default {
     padding: 20px 16px;
   }
 
-  .search-card,
+  /* .search-card, */
   .results-card {
     padding: 24px;
   }
@@ -813,12 +911,12 @@ export default {
   }
 
   .search-bar {
-    flex-direction: column;
+    /* flex-direction: column; */
     gap: 16px;
   }
 
   .search-input {
-    padding: 16px 16px 16px 52px;
+    padding: 16px 8px;
   }
 
   .search-btn {

@@ -13,12 +13,7 @@
       <div class="auth-card">
         <h1>Authentication Required</h1>
         <p>Please log in to access this application</p>
-        <button 
-          @click="redirectToAuth"
-          class="btn btn-primary"
-        >
-          Login with Google
-        </button>
+        <button @click="redirectToAuth" class="btn btn-primary">Login with Google</button>
       </div>
     </div>
 
@@ -36,50 +31,63 @@
 </template>
 
 <script>
-import Navbar from './Navbar.vue'
+import { APP_LOGIN_URL, APP_LOGOUT_URL, APP_META_URL } from "../constants/constants";
+import Navbar from "./Navbar.vue";
 
 export default {
-  name: 'AuthLayout',
+  name: "AuthLayout",
   components: {
-    Navbar
+    Navbar,
   },
   data() {
     return {
       loading: true,
-      user: null
-    }
+      user: null,
+    };
   },
   async mounted() {
-    await this.fetchAuthStatus()
+    await this.fetchAuthStatus();
   },
   methods: {
     async fetchAuthStatus() {
       try {
-        this.loading = true
-        const response = await fetch('https://app.truelinq.com/linq/auth/meta', {
-          credentials: 'include'
-        })
-        const data = await response.json()
-        
+        this.loading = true;
+        const response = await fetch(`${APP_META_URL}`, {
+          credentials: "include",
+        });
+        const data = await response.json();
+
         if (data.results && data.results.length > 0) {
-          this.user = data.results[0]
+          this.user = data.results[0];
         }
       } catch (error) {
-        console.error('Error fetching auth status:', error)
-        this.user = null
+        console.error("Error fetching auth status:", error);
+        this.user = null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
     redirectToAuth() {
-      window.location.href = 'https://app.truelinq.com/linq/auth/google'
+      const currentPath = this.$route.fullPath;
+      window.location.href = `${APP_LOGIN_URL}?returnEndPoint=/linq/work${currentPath}`;
+    },
+
+    redirectToAuth1() {
+      const currentPath = this.$route.fullPath;
+
+      const a = `https://app.truelinq.com/linq/auth/login?returnEndPoint=/linq/work${currentPath}`;
+      console.log("Redirecting to:", a);
+      window.location.href = a;
+
+      // window.location.href = `https://app.truelinq.com/linq/auth/google?returnEndPoint=${currentPath}`;
     },
     handleLogout() {
-      this.user = null
-      this.redirectToAuth()
-    }
-  }
-}
+      this.user = null;
+      // this.redirectToAuth();
+      window.location.href = APP_LOGOUT_URL
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -116,8 +124,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner p {
@@ -206,11 +218,11 @@ export default {
     padding: 32px 24px;
     margin: 16px;
   }
-  
+
   .auth-card h1 {
     font-size: 1.3rem;
   }
-  
+
   .main-content {
     min-height: calc(100vh - 56px);
   }

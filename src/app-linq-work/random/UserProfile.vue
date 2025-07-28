@@ -1,6 +1,7 @@
 <template>
   <div class="app">
-    <div class="container">
+    <FullScreenLoader v-if="apiLoading" />
+    <div v-else class="container">
       <!-- Profile Header Section -->
       <div class="profile-card">
         <div class="profile-header">
@@ -172,22 +173,24 @@
 <script>
 import { useRoute } from "vue-router/composables";
 import { getContact, getProfile, getUserProfile } from "../api/profileCreate";
-import { MessageSquare, Phone, Globe, Lock, Smartphone, Tag, MapPin, UserPlus, Clock, Check, Loader } from "lucide-vue";
+import { MessageSquare, Phone, Globe, Tag, MapPin, } from "lucide-vue";
+import FullScreenLoader from "../components/Loader.vue";
 
 export default {
   name: "UserProfile",
   components: {
     MessageSquare,
-    Smartphone,
+    // Smartphone,
     Phone,
     Globe,
-    Lock,
+    // Lock,
     Tag,
     MapPin,
-    UserPlus,
-    Clock,
-    Check,
-    Loader,
+    FullScreenLoader
+    // UserPlus,
+    // Clock,
+    // Check,
+    // Loader,
   },
   setup() {
     const route = useRoute();
@@ -239,6 +242,8 @@ export default {
       // dummyContactData: [], // This simulates contact API returning null
       
       useDummyData: false, // Toggle this to switch between dummy and real data
+
+      apiLoading: false,
     };
   },
   computed: {
@@ -343,6 +348,7 @@ export default {
     },
     
     async loadProfile() {
+      this.apiLoading = true;
       console.log("Loading profile data...");
       try {
         const profileId = this.$route.params.id;
@@ -426,6 +432,7 @@ export default {
       } catch (error) {
         console.error("Error loading profile:", error);
       }
+      this.apiLoading = false;
     },
     
     async loadConnectionStatus() {
@@ -449,7 +456,7 @@ export default {
       } catch (error) {
         console.error("Error sending connection request:", error);
       } finally {
-        this.connectingIds = this.connectingIds.filter((id) => userId !== professionalId);
+        this.connectingIds = this.connectingIds.filter((userId) => userId !== professionalId);
       }
     },
     

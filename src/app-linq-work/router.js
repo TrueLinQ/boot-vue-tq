@@ -14,10 +14,15 @@ export default BootRouter.route({
       name: "create",
       component: () => import("./random/CreateProfile.vue"),
     },
-    {
+    // {
+    //   path: "/profile",
+    //   name: "profile",
+    //   component: () => import("./random/MyProfile.vue"),
+    // },
+      {
       path: "/profile",
       name: "profile",
-      component: () => import("./random/MyProfile.vue"),
+      component: () => import("./random/OldMyProfile.vue"),
     },
     {
       path: "/profile/:id",
@@ -28,6 +33,11 @@ export default BootRouter.route({
       path: "/search",
       name: "search",
       component: () => import("./random/SearchPage.vue"),
+    },
+    {
+      path: "/connections",
+      name: "connections",
+      component: () => import("./random/Connections.vue"),
     },
     // Dashboards
     // {

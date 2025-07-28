@@ -4,25 +4,15 @@
       <div class="nav-content">
         <!-- Left side - Logo/Brand -->
         <div class="nav-brand">
-          <router-link to="/" class="brand-link">
-            TrueLinq Work
-          </router-link>
+          <router-link to="/" class="brand-link"> TrueLinq Work </router-link>
         </div>
 
         <!-- Right side - User menu -->
         <div class="nav-actions">
           <!-- User profile dropdown -->
           <div class="user-dropdown" ref="dropdownRef">
-            <button 
-              @click="toggleDropdown"
-              class="user-button"
-              type="button"
-            >
-              <img 
-                :src="user.profile.picture" 
-                :alt="user.profile.name"
-                class="user-avatar"
-              />
+            <button @click="toggleDropdown" class="user-button" type="button">
+              <img :src="user.profile.picture" :alt="user.profile.name" class="user-avatar" />
               <span class="user-name">{{ user.profile.name }}</span>
               <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -30,26 +20,15 @@
             </button>
 
             <!-- Dropdown menu -->
-            <div 
-              class="dropdown-menu"
-              :class="{ 'dropdown-menu-visible': showDropdown }"
-              @click.stop
-            >
-              <button 
-                @click="handleProfileClick"
-                class="dropdown-item dropdown-button"
-                type="button"
-              >
+            <div class="dropdown-menu" :class="{ 'dropdown-menu-visible': showDropdown }" @click.stop>
+              <button @click="handleProfileClick" class="dropdown-item dropdown-button" type="button">
                 My Profile
               </button>
+              <!-- <button @click="handleConnectionClick" class="dropdown-item dropdown-button" type="button">
+                My Connections
+              </button> -->
               <!-- <div class="dropdown-divider"></div> -->
-              <button 
-                @click="handleLogout"
-                class="dropdown-item dropdown-button"
-                type="button"
-              >
-                Logout
-              </button>
+              <button @click="handleLogout" class="dropdown-item dropdown-button" type="button">Logout</button>
             </div>
           </div>
         </div>
@@ -60,60 +39,65 @@
 
 <script>
 export default {
-  name: 'Navbar',
+  name: "Navbar",
   props: {
     user: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
-      showDropdown: false
-    }
+      showDropdown: false,
+    };
   },
   methods: {
     toggleDropdown(event) {
-      event.stopPropagation()
-      this.showDropdown = !this.showDropdown
+      event.stopPropagation();
+      this.showDropdown = !this.showDropdown;
     },
     closeDropdown() {
-      this.showDropdown = false
+      this.showDropdown = false;
     },
     handleClickOutside(event) {
       if (this.$refs.dropdownRef && !this.$refs.dropdownRef.contains(event.target)) {
-        this.closeDropdown()
+        this.closeDropdown();
       }
     },
     handleProfileClick(event) {
-      event.stopPropagation()
-      this.closeDropdown()
-      this.$router.push('/profile')
+      event.stopPropagation();
+      this.closeDropdown();
+      this.$router.push("/profile");
+    },
+    handleConnectionClick(event) {
+      event.stopPropagation();
+      this.closeDropdown();
+      this.$router.push("/connections");
     },
     async handleLogout(event) {
-      event.stopPropagation()
-      
+      event.stopPropagation();
+
       try {
-        await fetch('https://app.truelinq.com/linq/auth/logout', {
-          method: 'POST',
-          credentials: 'include'
-        })
+        await fetch("https://app.truelinq.com/linq/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
       } catch (error) {
-        console.error('Logout error:', error)
+        console.error("Logout error:", error);
       }
-      
-      this.closeDropdown()
-      this.$emit('logout')
-      window.location.href = '/linq/auth/login'
-    }
+
+      this.closeDropdown();
+      this.$emit("logout");
+      window.location.href = "/linq/auth/login";
+    },
   },
   mounted() {
-    document.addEventListener('click', this.handleClickOutside)
+    document.addEventListener("click", this.handleClickOutside);
   },
   beforeDestroy() {
-    document.removeEventListener('click', this.handleClickOutside)
-  }
-}
+    document.removeEventListener("click", this.handleClickOutside);
+  },
+};
 </script>
 
 <style scoped>
@@ -283,15 +267,15 @@ export default {
   .nav-container {
     padding: 0 16px;
   }
-  
+
   .nav-content {
     height: 56px;
   }
-  
+
   .brand-link {
     font-size: 1.1rem;
   }
-  
+
   .dropdown-menu {
     width: 180px;
   }
