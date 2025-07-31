@@ -636,7 +636,8 @@ export default {
         if (this.selectedProfile) {
           // If an existing profile is selected, use its phone and construct profileIds
           profilePayload.contact = this.selectedProfile.phone;
-          profilePayload.profileIds = [`${this.selectedProfile.provider}:${this.selectedProfile.profileId}`];
+          // profilePayload.profileIds = [`${this.selectedProfile.provider}:${this.selectedProfile.profileId}`];
+          profilePayload.profileIds = [this.selectedProfile.profileUUId];
         } else if (this.contactMethod && this.contactValue.trim()) {
           // If a new contact method is entered, use its value and an empty profileIds array
           profilePayload.contact = this.contactValue.trim();
