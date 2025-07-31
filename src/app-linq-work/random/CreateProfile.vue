@@ -514,7 +514,9 @@ export default {
         // Redirect to verification page for new contact method
         const provider = this.contactMethod;
         const returnUrl = encodeURIComponent(window.location.origin + "/linq/work/create");
-        window.location.href = `${APP_CONNECT_URL}/${provider}?redirect=${returnUrl}`;
+        const a =`${APP_CONNECT_URL}/${provider}?returnEndPoint=/linq/work/create`;
+        console.log(a)
+        window.location.href = `${APP_CONNECT_URL}/${provider}?returnEndPoint=/linq/work/create`;
       } else {
         // Proceed to next step
         this.nextStep();
