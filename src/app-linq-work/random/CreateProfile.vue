@@ -514,8 +514,8 @@ export default {
         // Redirect to verification page for new contact method
         const provider = this.contactMethod;
         const returnUrl = encodeURIComponent(window.location.origin + "/linq/work/create");
-        const a =`${APP_CONNECT_URL}/${provider}?returnEndPoint=/linq/work/create`;
-        console.log(a)
+        const a = `${APP_CONNECT_URL}/${provider}?returnEndPoint=/linq/work/create`;
+        console.log(a);
         window.location.href = `${APP_CONNECT_URL}/${provider}?returnEndPoint=/linq/work/create`;
       } else {
         // Proceed to next step
@@ -553,6 +553,13 @@ export default {
           console.log("Verification Required:", this.verificationRequired);
           console.log("Required Providers:", this.requiredProviders);
           console.log("Existing Profiles:", this.existingProfiles);
+
+          if (!this.verificationRequired && this.hasExistingProfiles) {
+            // If verification is not required and existing profiles are available,
+            // // skip to step 2
+            this.currentStep = 2;
+            console.log("Auto-skipping to step 2 - existing verified profiles found");
+          }
         }
       } catch (error) {
         this.apiError = error;
