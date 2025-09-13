@@ -8,161 +8,170 @@
     <FullScreenLoader v-if="apiLoading" />
 
     <div v-else class="container">
-      <!-- Step 1: Getting Started -->
-      <div v-if="currentStep === 1" class="step">
-        <div class="main-card">
-          <div class="header">
-            <h2>Create Your Profile</h2>
-            <p>Build a professional presence that showcases your expertise and connects you with opportunities.</p>
-          </div>
+      <div v-if="hasProfile" class="profile-error">
+        <router-link to="/profile" class="btn btn-primary create-profile-btn">
+          <span>View Profile</span>
+          <ArrowRight :size="16" style="display: inline; vertical-align: middle; margin-left: 6px" />
+        </router-link>
+        <p class="error-text">You already have a professional profile.</p>
+      </div>
 
-          <div class="feature-cards">
-            <div class="feature-card">
-              <div class="feature-icon">
-                <Briefcase :size="24" />
+      <div v-else>
+        <!-- Step 1: Getting Started -->
+        <div v-if="currentStep === 1" class="step">
+          <div class="main-card">
+            <div class="header">
+              <h2>Create Your Profile</h2>
+              <p>Build a professional presence that showcases your expertise and connects you with opportunities.</p>
+            </div>
+
+            <div class="feature-cards">
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <Briefcase :size="24" />
+                </div>
+                <div class="feature-content">
+                  <h3>Professional Details</h3>
+                  <p>Add your experience, skills, and background</p>
+                </div>
               </div>
-              <div class="feature-content">
-                <h3>Professional Details</h3>
-                <p>Add your experience, skills, and background</p>
+
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <MessageCircle :size="24" />
+                </div>
+                <div class="feature-content">
+                  <h3>Contact Preferences</h3>
+                  <p>Choose how clients and collaborators reach you</p>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <div class="feature-icon">
+                  <Lock :size="24" />
+                </div>
+                <div class="feature-content">
+                  <h3>Privacy Settings</h3>
+                  <p>Control the visibility of your profile</p>
+                </div>
               </div>
             </div>
 
-            <div class="feature-card">
-              <div class="feature-icon">
-                <MessageCircle :size="24" />
-              </div>
-              <div class="feature-content">
-                <h3>Contact Preferences</h3>
-                <p>Choose how clients and collaborators reach you</p>
-              </div>
+            <div class="button-row">
+              <div></div>
+              <button @click="nextStep" class="btn btn-primary">Start Building Profile</button>
             </div>
-
-            <div class="feature-card">
-              <div class="feature-icon">
-                <Lock :size="24" />
-              </div>
-              <div class="feature-content">
-                <h3>Privacy Settings</h3>
-                <p>Control the visibility of your profile</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="button-row">
-            <div></div>
-            <button @click="nextStep" class="btn btn-primary">Start Building Profile</button>
           </div>
         </div>
-      </div>
-      <!-- Step 2: Contact Method Selection -->
-      <div v-if="currentStep === 2" class="step">
-        <div class="main-card">
-          <div class="header">
-            <h2>Contact Preferences</h2>
-            <p v-if="!verificationRequired && hasExistingProfiles">
-              You have verified contact methods available. Please choose one to continue.
-            </p>
-            <p v-else-if="verificationRequired">
-              How would you like clients to reach you? You'll need to verify your contact method.
-            </p>
-            <p v-else>How would you like clients to reach you?</p>
-          </div>
+        <!-- Step 2: Contact Method Selection -->
+        <div v-if="currentStep === 2" class="step">
+          <div class="main-card">
+            <div class="header">
+              <h2>Contact Preferences</h2>
+              <p v-if="!verificationRequired && hasExistingProfiles">
+                You have verified contact methods available. Please choose one to continue.
+              </p>
+              <p v-else-if="verificationRequired">
+                How would you like clients to reach you? You'll need to verify your contact method.
+              </p>
+              <p v-else>How would you like clients to reach you?</p>
+            </div>
 
-          <!-- Show existing verified profiles when verification is not required -->
-          <div v-if="!verificationRequired && hasExistingProfiles" class="contact-options">
-            <!-- WhatsApp profiles -->
-            <div v-if="whatsappProfiles.length > 0">
+            <!-- Show existing verified profiles when verification is not required -->
+            <div v-if="!verificationRequired && hasExistingProfiles" class="contact-options">
+              <!-- WhatsApp profiles -->
+              <div v-if="whatsappProfiles.length > 0">
+                <div
+                  v-for="(profile, index) in whatsappProfiles"
+                  :key="'whatsapp-' + index"
+                  @click="selectExistingProfile('whatsapp', profile)"
+                  :class="[
+                    'contact-option',
+                    { active: selectedProfile && selectedProfile.profileId === profile.profileId },
+                  ]"
+                >
+                  <div class="contact-icon">
+                    <Smartphone :size="24" />
+                  </div>
+                  <div class="contact-content">
+                    <h3>WhatsApp</h3>
+                    <p>
+                      <!-- {{ profile.name }}   -->
+                      {{ formatPhoneNumber(profile.phone) }}
+                      <!-- <span style="color: #10b981; font-weight: 500"><Check :size="14" /></span> -->
+                    </p>
+                  </div>
+                  <div
+                    class="radio"
+                    :class="{ checked: selectedProfile && selectedProfile.profileId === profile.profileId }"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Mobile profiles -->
+              <div v-if="mobileProfiles.length > 0">
+                <div
+                  v-for="(profile, index) in mobileProfiles"
+                  :key="'mobile-' + index"
+                  @click="selectExistingProfile('mobile', profile)"
+                  :class="[
+                    'contact-option',
+                    { active: selectedProfile && selectedProfile.profileId === profile.profileId },
+                  ]"
+                >
+                  <div class="contact-icon">
+                    <Phone :size="24" />
+                  </div>
+                  <div class="contact-content">
+                    <h3>Phone</h3>
+                    <p>
+                      {{ formatPhoneNumber(profile.phone) }}
+                      <!-- <span style="color: #10b981; font-weight: 500">Verified</span> -->
+                    </p>
+                  </div>
+                  <div
+                    class="radio"
+                    :class="{ checked: selectedProfile && selectedProfile.profileId === profile.profileId }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Show regular contact options when verification is required or no existing profiles -->
+            <div v-else class="contact-options">
               <div
-                v-for="(profile, index) in whatsappProfiles"
-                :key="'whatsapp-' + index"
-                @click="selectExistingProfile('whatsapp', profile)"
-                :class="[
-                  'contact-option',
-                  { active: selectedProfile && selectedProfile.profileId === profile.profileId },
-                ]"
+                v-if="requiredProviders.includes('whatsapp')"
+                @click="selectNewContactMethod('whatsapp')"
+                :class="['contact-option', { active: contactMethod === 'whatsapp' }]"
               >
                 <div class="contact-icon">
                   <Smartphone :size="24" />
                 </div>
                 <div class="contact-content">
                   <h3>WhatsApp</h3>
-                  <p>
-                    <!-- {{ profile.name }}   -->
-                    {{ formatPhoneNumber(profile.phone) }}
-                    <!-- <span style="color: #10b981; font-weight: 500"><Check :size="14" /></span> -->
-                  </p>
+                  <p>Quick messaging and voice calls</p>
                 </div>
-                <div
-                  class="radio"
-                  :class="{ checked: selectedProfile && selectedProfile.profileId === profile.profileId }"
-                ></div>
+                <div class="radio" :class="{ checked: contactMethod === 'whatsapp' }"></div>
               </div>
-            </div>
 
-            <!-- Mobile profiles -->
-            <div v-if="mobileProfiles.length > 0">
               <div
-                v-for="(profile, index) in mobileProfiles"
-                :key="'mobile-' + index"
-                @click="selectExistingProfile('mobile', profile)"
-                :class="[
-                  'contact-option',
-                  { active: selectedProfile && selectedProfile.profileId === profile.profileId },
-                ]"
+                v-if="requiredProviders.includes('mobile')"
+                @click="selectNewContactMethod('mobile')"
+                :class="['contact-option', { active: contactMethod === 'mobile' }]"
               >
                 <div class="contact-icon">
                   <Phone :size="24" />
                 </div>
                 <div class="contact-content">
-                  <h3>Phone</h3>
-                  <p>
-                    {{ formatPhoneNumber(profile.phone) }}
-                    <!-- <span style="color: #10b981; font-weight: 500">Verified</span> -->
-                  </p>
+                  <h3>Phone Number</h3>
+                  <p>Direct phone calls</p>
                 </div>
-                <div
-                  class="radio"
-                  :class="{ checked: selectedProfile && selectedProfile.profileId === profile.profileId }"
-                ></div>
+                <div class="radio" :class="{ checked: contactMethod === 'mobile' }"></div>
               </div>
             </div>
-          </div>
 
-          <!-- Show regular contact options when verification is required or no existing profiles -->
-          <div v-else class="contact-options">
-            <div
-              v-if="requiredProviders.includes('whatsapp')"
-              @click="selectNewContactMethod('whatsapp')"
-              :class="['contact-option', { active: contactMethod === 'whatsapp' }]"
-            >
-              <div class="contact-icon">
-                <Smartphone :size="24" />
-              </div>
-              <div class="contact-content">
-                <h3>WhatsApp</h3>
-                <p>Quick messaging and voice calls</p>
-              </div>
-              <div class="radio" :class="{ checked: contactMethod === 'whatsapp' }"></div>
-            </div>
-
-            <div
-              v-if="requiredProviders.includes('mobile')"
-              @click="selectNewContactMethod('mobile')"
-              :class="['contact-option', { active: contactMethod === 'mobile' }]"
-            >
-              <div class="contact-icon">
-                <Phone :size="24" />
-              </div>
-              <div class="contact-content">
-                <h3>Phone Number</h3>
-                <p>Direct phone calls</p>
-              </div>
-              <div class="radio" :class="{ checked: contactMethod === 'mobile' }"></div>
-            </div>
-          </div>
-
-          <!-- Show input field for new contact method -->
-          <!-- <div v-if="contactMethod && !selectedProfile" class="form-section">
+            <!-- Show input field for new contact method -->
+            <!-- <div v-if="contactMethod && !selectedProfile" class="form-section">
             <div class="form-group">
               <label>{{ contactMethod === "whatsapp" ? "WhatsApp Number" : "Phone Number" }}</label>
               <input v-model="contactValue" type="tel" placeholder="+1 (555) 123-4567" class="input" />
@@ -172,184 +181,185 @@
             </div>
           </div>-->
 
-          <div class="button-row">
-            <button @click="prevStep" class="btn btn-secondary">Back</button>
-            <button
-              @click="handleStep2Continue"
-              :disabled="!canProceedStep2"
-              :class="['btn', canProceedStep2 ? 'btn-primary' : 'btn-disabled']"
-            >
-              Continue
-            </button>
+            <div class="button-row">
+              <button @click="prevStep" class="btn btn-secondary">Back</button>
+              <button
+                @click="handleStep2Continue"
+                :disabled="!canProceedStep2"
+                :class="['btn', canProceedStep2 ? 'btn-primary' : 'btn-disabled']"
+              >
+                Continue
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Step 3: Professional Information -->
-      <!-- Step 3: Professional Information -->
-      <div v-if="currentStep === 3" class="step">
-        <div class="main-card">
-          <div class="header">
-            <h2>Professional Information</h2>
-            <p>Tell us about your business and expertise</p>
-          </div>
-
-          <div class="form-section">
-            <h3 class="section-title">Business Information</h3>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Business Name *</label>
-                <input v-model="profile.businessName" placeholder="Tech Solutions Inc." class="input" required />
-              </div>
-              <div class="form-group">
-                <label>Title *</label>
-                <input v-model="profile.title" placeholder="Software Engineer" class="input" required />
-              </div>
+        <!-- Step 3: Professional Information -->
+        <!-- Step 3: Professional Information -->
+        <div v-if="currentStep === 3" class="step">
+          <div class="main-card">
+            <div class="header">
+              <h2>Professional Information</h2>
+              <p>Tell us about your business and expertise</p>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Category *</label>
-                <input v-model="profile.category" placeholder="Technology, Healthcare, etc." class="input" required />
-              </div>
-              <div class="form-group">
-                <label>SubCategory *</label>
-                <input v-model="profile.subCategory" placeholder="Sub Category" class="input" required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Website</label>
-              <input v-model="profile.website" type="url" placeholder="https://example.com" class="input" />
-            </div>
+            <div class="form-section">
+              <h3 class="section-title">Business Information</h3>
 
-            <div class="form-group">
-              <label>Address</label>
-              <input v-model="profile.address" placeholder="123 Main St, City, State" class="input" />
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3 class="section-title">Description</h3>
-            <div class="form-group">
-              <label>Business Description *</label>
-              <textarea
-                v-model="profile.businessDesc"
-                placeholder="Describe your business, services, and what makes you unique..."
-                rows="4"
-                class="textarea"
-                required
-              ></textarea>
-            </div>
-            <div class="form-group">
-              <label>Additional Description</label>
-              <textarea
-                v-model="profile.description"
-                placeholder="Any additional information about your services or expertise..."
-                rows="3"
-                class="textarea"
-                required
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="button-row">
-            <button @click="prevStep" class="btn btn-secondary">Back</button>
-            <button
-              @click="nextStep"
-              :disabled="!canProceedStep3"
-              :class="['btn', canProceedStep3 ? 'btn-primary' : 'btn-disabled']"
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 4: Privacy Settings -->
-      <div v-if="currentStep === 4" class="step">
-        <div class="main-card">
-          <div class="header">
-            <h2>Privacy Settings</h2>
-            <p>Control how your profile is viewed and discovered</p>
-          </div>
-
-          <div v-if="apiError" class="error-message">
-            <div class="error-content">
-              <AlertCircle :size="16" class="error-icon" />
-              <span>{{ apiError }}</span>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <!-- <h3 class="section-title">Profile Visibility</h3> -->
-
-            <div class="privacy-wrapper">
-              <div class="privacy-toggle">
-                <div class="privacy-info">
-                  <div class="privacy-title">
-                    <Globe v-if="profile.isPublic" :size="16" style="display: inline; margin-right: 8px" />
-                    <Shield v-else :size="16" style="display: inline; margin-right: 8px" />
-                    {{ profile.isPublic ? "Public Profile" : "Private Profile" }}
-                  </div>
-                  <p>
-                    {{
-                      profile.isPublic
-                        ? "Your profile will be discoverable and visible to everyone"
-                        : "Only people with direct access can view your profile"
-                    }}
-                  </p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Business Name *</label>
+                  <input v-model="profile.businessName" placeholder="Tech Solutions Inc." class="input" required />
                 </div>
-                <label class="toggle">
-                  <input type="checkbox" v-model="profile.isPublic" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="privacy-toggle">
-                <div class="privacy-info">
-                  <div class="privacy-title">
-                    <Search v-if="profile.searchable" :size="16" style="display: inline; margin-right: 8px" />
-                    <EyeOff v-else :size="16" style="display: inline; margin-right: 8px" />
-                    {{ profile.searchable ? "Searchable" : "Not Searchable" }}
-                  </div>
-                  <p>
-                    {{
-                      profile.searchable
-                        ? "Your profile can be found in search results"
-                        : "Your profile won't appear in search results"
-                    }}
-                  </p>
+                <div class="form-group">
+                  <label>Title *</label>
+                  <input v-model="profile.title" placeholder="Software Engineer" class="input" required />
                 </div>
-                <label class="toggle">
-                  <input type="checkbox" v-model="profile.searchable" />
-                  <span class="toggle-slider"></span>
-                </label>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Category *</label>
+                  <input v-model="profile.category" placeholder="Technology, Healthcare, etc." class="input" required />
+                </div>
+                <div class="form-group">
+                  <label>SubCategory *</label>
+                  <input v-model="profile.subCategory" placeholder="Sub Category" class="input" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Website</label>
+                <input v-model="profile.website" type="url" placeholder="https://example.com" class="input" />
+              </div>
+
+              <div class="form-group">
+                <label>Address</label>
+                <input v-model="profile.address" placeholder="123 Main St, City, State" class="input" />
               </div>
             </div>
-          </div>
 
-          <div class="button-row">
-            <button @click="prevStep" class="btn btn-secondary">Back</button>
-            <button @click="nextStep" class="btn btn-primary">Create Profile</button>
+            <div class="form-section">
+              <h3 class="section-title">Description</h3>
+              <div class="form-group">
+                <label>Business Description *</label>
+                <textarea
+                  v-model="profile.businessDesc"
+                  placeholder="Describe your business, services, and what makes you unique..."
+                  rows="4"
+                  class="textarea"
+                  required
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label>Additional Description</label>
+                <textarea
+                  v-model="profile.description"
+                  placeholder="Any additional information about your services or expertise..."
+                  rows="3"
+                  class="textarea"
+                  required
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button @click="prevStep" class="btn btn-secondary">Back</button>
+              <button
+                @click="nextStep"
+                :disabled="!canProceedStep3"
+                :class="['btn', canProceedStep3 ? 'btn-primary' : 'btn-disabled']"
+              >
+                Continue
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Step 4: Success Screen -->
-      <div v-if="currentStep === 5" class="step">
-        <div class="main-card">
-          <div class="success-header">
-            <div class="success-icon">
-              <Check :size="24" />
+        <!-- Step 4: Privacy Settings -->
+        <div v-if="currentStep === 4" class="step">
+          <div class="main-card">
+            <div class="header">
+              <h2>Privacy Settings</h2>
+              <p>Control how your profile is viewed and discovered</p>
             </div>
-            <h2>Profile Created Successfully</h2>
-            <p>Your professional profile is now ready to attract opportunities and showcase your expertise.</p>
+
+            <div v-if="apiError" class="error-message">
+              <div class="error-content">
+                <AlertCircle :size="16" class="error-icon" />
+                <span>{{ apiError }}</span>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <!-- <h3 class="section-title">Profile Visibility</h3> -->
+
+              <div class="privacy-wrapper">
+                <div class="privacy-toggle">
+                  <div class="privacy-info">
+                    <div class="privacy-title">
+                      <Globe v-if="profile.isPublic" :size="16" style="display: inline; margin-right: 8px" />
+                      <Shield v-else :size="16" style="display: inline; margin-right: 8px" />
+                      {{ profile.isPublic ? "Public Profile" : "Private Profile" }}
+                    </div>
+                    <p>
+                      {{
+                        profile.isPublic
+                          ? "Your profile will be discoverable and visible to everyone"
+                          : "Only people with direct access can view your profile"
+                      }}
+                    </p>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" v-model="profile.isPublic" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="privacy-toggle">
+                  <div class="privacy-info">
+                    <div class="privacy-title">
+                      <Search v-if="profile.searchable" :size="16" style="display: inline; margin-right: 8px" />
+                      <EyeOff v-else :size="16" style="display: inline; margin-right: 8px" />
+                      {{ profile.searchable ? "Searchable" : "Not Searchable" }}
+                    </div>
+                    <p>
+                      {{
+                        profile.searchable
+                          ? "Your profile can be found in search results"
+                          : "Your profile won't appear in search results"
+                      }}
+                    </p>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" v-model="profile.searchable" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button @click="prevStep" class="btn btn-secondary">Back</button>
+              <button @click="nextStep" class="btn btn-primary">Create Profile</button>
+            </div>
           </div>
+        </div>
 
-          <div class="button-row">
-            <router-link to="/profile" class="btn btn-primary"> View Full Profile </router-link>
+        <!-- Step 4: Success Screen -->
+        <div v-if="currentStep === 5" class="step">
+          <div class="main-card">
+            <div class="success-header">
+              <div class="success-icon">
+                <Check :size="24" />
+              </div>
+              <h2>Profile Created Successfully</h2>
+              <p>Your professional profile is now ready to attract opportunities and showcase your expertise.</p>
+            </div>
 
-            <button class="btn btn-secondary">Share Profile</button>
+            <div class="button-row">
+              <router-link to="/profile" class="btn btn-primary"> View Full Profile </router-link>
+
+              <button class="btn btn-secondary">Share Profile</button>
+            </div>
           </div>
         </div>
       </div>
@@ -371,9 +381,10 @@ import {
   Search,
   EyeOff,
   AlertCircle,
+  ArrowRight,
 } from "lucide-vue";
 // Import both functions from your apiService file
-import { getRequiredProvider, createProfile } from "../api/profileCreate";
+import { getRequiredProvider, createProfile, getProfile } from "../api/profileCreate";
 import FullScreenLoader from "../components/Loader.vue";
 import { APP_CONNECT_URL } from "../constants/constants";
 
@@ -391,6 +402,7 @@ export default {
     FullScreenLoader,
     Smartphone,
     AlertCircle,
+    ArrowRight,
   },
   name: "UnifiedProfileCreator",
   data() {
@@ -417,6 +429,7 @@ export default {
         location: "", // Will be derived from address or geolocation
         email: "", // Assuming you'll add a field for email
       },
+      hasProfile: false, // true = user has profile, false = no profile
       apiData: null,
       apiLoading: false,
       apiError: null,
@@ -465,6 +478,7 @@ export default {
     },
   },
   async mounted() {
+    await this.loadProfile();
     await this.fetchRequiredProviderData();
     // Attempt to get user's location on mount, but don't block the UI
     this.getUserLocation();
@@ -531,6 +545,22 @@ export default {
     removeSkill(index) {
       this.profile.skills.splice(index, 1);
     },
+
+    async loadProfile() {
+      this.apiLoading = true;
+      try {
+        const response = await getProfile();
+        const profileData = response.data?.results?.[0];
+
+        this.hasProfile = !!profileData; // true if profile exists, false if not
+      } catch (error) {
+        console.error("Error loading profile:", error);
+        this.hasProfile = false; // assume no profile if error
+      } finally {
+        this.apiLoading = false;
+      }
+    },
+
     async fetchRequiredProviderData() {
       this.apiLoading = true;
       this.apiError = null;
@@ -690,6 +720,22 @@ export default {
 </script>
 
 <style scoped>
+.profile-error {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.create-profile-btn {
+  font-size: 0.9rem;
+  padding: 12px 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.error-text {
+  color: #666;
+  font-size: 1rem;
+  margin: 1rem auto;
+}
 .error-message {
   background-color: #fef2f2;
   border: 1px solid #fecaca;
