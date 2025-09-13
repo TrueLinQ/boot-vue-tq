@@ -40,7 +40,7 @@ import { APP_CONNECT_URL } from "../constants/constants";
 
 export default {
   name: "ContactSection",
-  components: { ContactCard, Phone, MessageSquare },
+  components: { ContactCard },
   props: {
     socialProfile: {
       type: Array,
