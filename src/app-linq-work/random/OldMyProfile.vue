@@ -15,7 +15,7 @@
       </div>
 
       <!-- Profile Header Section -->
-      <div v-else class="profile-header-section" F>
+      <div v-else class="profile-header-section">
         <div class="profile-card">
           <div class="profile-header">
             <div class="profile-info">
@@ -121,10 +121,17 @@
                   </a>
                 </div>
 
-                <div class="info-row" v-if="profile.socialProfile && profile.socialProfile.length > 0">
+                <!-- <div class="info-row" v-if="profile.socialProfile && profile.socialProfile.length > 0">
                   <component :is="getContactIcon(profile.socialProfile[0].provider)" class="info-icon" :size="16" />
                   <span class="info-text">{{ profile.socialProfile[0].phone }}</span>
-                </div>
+                </div> -->
+
+                <!-- <ContactLink
+                  :phone-number="'9876543210'"
+                  :whatsapp-number="'9123456780'"
+                  :initial-phone-linked="true"
+                  :initial-whatsapp-linked="false"
+                /> -->
               </div>
 
               <div class="secondary-info">
@@ -141,6 +148,8 @@
             </div>
           </div>
         </div>
+
+        <ContactLink :socialProfile="profile.socialProfile" :saveProfile="saveProfile" />
 
         <!-- Connections Section -->
         <div class="connections-card">
@@ -326,6 +335,7 @@ import { getProfile, updateProfile } from "../api/profileCreate";
 import { getConnectionRequests, getAcceptedConnections, respondToConnectionRequest } from "../api/myConnections";
 import { MessageSquare, Phone, Globe, Lock, Smartphone, Tag, MapPin, Edit2, ArrowRight } from "lucide-vue";
 import FullScreenLoader from "../components/Loader.vue";
+import ContactLink from "../elements/ContactLink.vue";
 
 export default {
   name: "ProfileSection",
@@ -340,6 +350,7 @@ export default {
     Edit2,
     ArrowRight,
     FullScreenLoader,
+    ContactLink,
   },
   data() {
     return {
@@ -769,19 +780,33 @@ export default {
       }
     },
 
-    async saveProfile() {
+    async saveProfile(verifiedID) {
       this.isSaving = true;
       try {
+        // initialize editProfile only if it's not already set
+        if (!this.editProfile.socialProfile) {
+          this.editProfile =  { ...this.profile }
+        }
+        console.log("Initialized editProfile:", this.editProfile);
+        console.log("Initialized editProfile:", this.profile);
+
+        const profileIds = this.editProfile.socialProfile.map((profile) => profile.profileUUId);
+        // If verifiedID is provided, add it to the profileIds array
+        if (verifiedID) {
+          profileIds.push(verifiedID);
+        }
+        console.log("Profile IDs:", profileIds, verifiedID);
+        
+
         const updateData = {
           description: this.editProfile.description,
           id: this.profile.id,
           isPublic: this.editProfile.isPublic,
-          profileIds: this.editProfile.socialProfile.map((profile) => profile.profileUUId),
+          profileIds: profileIds,
         };
 
         const response = await updateProfile(updateData);
         console.log("Profile update response:", response);
-
         this.profile = JSON.parse(JSON.stringify(this.editProfile));
         this.isEditing = false;
         this.editProfile = {};
