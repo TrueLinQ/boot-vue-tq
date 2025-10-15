@@ -75,7 +75,10 @@
               <!-- <Loader v-if="connectingIds.includes(profile.id)" class="loader-icon" :size="16" /> -->
               <span>{{ connectingIds.includes(profile.userId) ? "Connecting..." : "Connect" }}</span>
             </button>
-            <div v-else-if="!profile.areConnected && !profile.canSendRequest || connectionStatus === 'pending'" class="pending-badge">
+            <div
+              v-else-if="(!profile.areConnected && !profile.canSendRequest) || connectionStatus === 'pending'"
+              class="pending-badge"
+            >
               <!-- <Clock :size="16" /> -->
               Pending
             </div>
@@ -108,7 +111,7 @@
                 <Phone :size="24" />
               </div>
               <div class="contact-option-info">
-                <h4>{{ contact.provider === 'mobile' ? 'Call Now' : 'Phone' }}</h4>
+                <h4>{{ contact.provider === "mobile" ? "Call Now" : "Phone" }}</h4>
                 <p :class="{ 'blurred-text': !isConnected }">
                   {{ isConnected ? contact.phone : "•••••••••••" }}
                 </p>
@@ -158,7 +161,6 @@
               WhatsApp
             </button>
           </div>
-
         </div>
 
         <!-- No contact information message -->
@@ -172,8 +174,8 @@
 
 <script>
 import { useRoute } from "vue-router/composables";
-import { getContact, getProfile, getUserProfile } from "../api/profileCreate";
-import { MessageSquare, Phone, Globe, Tag, MapPin, } from "lucide-vue";
+import { getContact, getProfile, getUserProfile, sendConnection } from "../api/profileCreate";
+import { MessageSquare, Phone, Globe, Tag, MapPin } from "lucide-vue";
 import FullScreenLoader from "../components/Loader.vue";
 
 export default {
@@ -186,7 +188,7 @@ export default {
     // Lock,
     Tag,
     MapPin,
-    FullScreenLoader
+    FullScreenLoader,
     // UserPlus,
     // Clock,
     // Check,
@@ -235,12 +237,12 @@ export default {
           profileId: "a7M3dDTOFxT8u3GooQs7F9nhSdR2",
           verified: true,
           isPublic: true,
-        }
+        },
       ],
-      
+
       // Test Case 2: Contact API returns null, but channels exist - uncomment this to test
       // dummyContactData: [], // This simulates contact API returning null
-      
+
       useDummyData: false, // Toggle this to switch between dummy and real data
 
       apiLoading: false,
@@ -251,58 +253,52 @@ export default {
     isConnected() {
       return this.profile.areConnected || this.connectionStatus === "connected" || this.hasActualContactData;
     },
-    
+
     // Check if contact API actually returned data
     hasActualContactData() {
       const contactData = this.useDummyData ? this.dummyContactData : this.contactData;
       return contactData && contactData.length > 0;
     },
-    
+
     // Get the contact data to display
     displayContactInfo() {
       // Case 1: Contact API returns results (user is connected)
       if (this.hasActualContactData) {
         const contactData = this.useDummyData ? this.dummyContactData : this.contactData;
-        return contactData.filter(contact => 
-          contact.provider === 'mobile' || contact.provider === 'whatsapp'
-        );
+        return contactData.filter((contact) => contact.provider === "mobile" || contact.provider === "whatsapp");
       }
-      
+
       // Case 2: Contact API returns null/empty (user not connected)
       // Create placeholder objects based on channels array
       const placeholders = [];
       if (this.profile.channels && this.profile.channels.length > 0) {
-        this.profile.channels.forEach(channel => {
-          if (channel === 'mobile' || channel === 'whatsapp') {
+        this.profile.channels.forEach((channel) => {
+          if (channel === "mobile" || channel === "whatsapp") {
             placeholders.push({
               phone: "•••••••••••",
               provider: channel,
-              isPlaceholder: true
+              isPlaceholder: true,
             });
           }
         });
       }
-      
+
       return placeholders;
     },
-    
+
     // Check if there are any contact options available
     hasContactOptions() {
       return this.displayContactInfo.length > 0;
     },
-    
+
     // Filter mobile contacts
     mobileContacts() {
-      return this.displayContactInfo.filter(contact => 
-        contact.provider === 'mobile'
-      );
+      return this.displayContactInfo.filter((contact) => contact.provider === "mobile");
     },
-    
+
     // Filter WhatsApp contacts
     whatsappContacts() {
-      return this.displayContactInfo.filter(contact => 
-        contact.provider === 'whatsapp'
-      );
+      return this.displayContactInfo.filter((contact) => contact.provider === "whatsapp");
     },
   },
   async mounted() {
@@ -327,15 +323,15 @@ export default {
           if (this.dummyContactData.length > 0) {
             return {
               data: {
-                results: this.dummyContactData
-              }
+                results: this.dummyContactData,
+              },
             };
           } else {
             // Test Case 2: Contact API returns null/empty (simulate API returning null)
             return {
               data: {
-                results: null // or could be undefined or empty array
-              }
+                results: null, // or could be undefined or empty array
+              },
             };
           }
         }
@@ -346,7 +342,7 @@ export default {
         return { data: { results: null } }; // Return null on error
       }
     },
-    
+
     async loadProfile() {
       this.apiLoading = true;
       console.log("Loading profile data...");
@@ -382,13 +378,14 @@ export default {
         // };
 
         console.log("Loading profile response data...", response);
-        
+
         if (response && response.data) {
           const profileData = response.data?.results[0];
 
           console.log("Profile data loaded:", profileData);
           this.profile = {
             id: profileData.id,
+            userId: profileData.userId,
             userName: profileData.userName || "Unknown User",
             isPublic: profileData.isPublic || false,
             category: profileData.category || "",
@@ -434,21 +431,24 @@ export default {
       }
       this.apiLoading = false;
     },
-    
+
     async loadConnectionStatus() {
       console.log("Loading connection status...");
       await new Promise((resolve) => setTimeout(resolve, 500));
-      
+
       // For testing - you can change this to test different states
       // this.connectionStatus = 'connected'; // Enable this to test contact visibility
     },
-    
+
     async connect(professionalId) {
       this.connectingIds.push(professionalId);
 
       try {
         // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log("Sending connection request to:", professionalId);
+        await sendConnection({ userId: professionalId });
+
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
 
         this.connectionStatus = "pending";
         this.profile.canSendRequest = false;
@@ -459,7 +459,7 @@ export default {
         this.connectingIds = this.connectingIds.filter((userId) => userId !== professionalId);
       }
     },
-    
+
     getInitials(name) {
       if (!name) return "";
       return name
@@ -468,7 +468,7 @@ export default {
         .join("")
         .toUpperCase();
     },
-    
+
     getContactIcon(provider) {
       switch (provider?.toLowerCase()) {
         case "whatsapp":
@@ -484,11 +484,7 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
-
-
 .container {
   max-width: 800px;
   margin: 0 auto;
@@ -672,7 +668,7 @@ export default {
   border-radius: 8px;
   font-weight: 500;
   text-align: center;
-  justify-content: center
+  justify-content: center;
 }
 
 .loader-icon {

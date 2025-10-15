@@ -152,179 +152,7 @@
         <ContactLink :socialProfile="profile.socialProfile" :saveProfile="saveProfile" />
 
         <!-- Connections Section -->
-        <div class="connections-card">
-          <div class="header">
-            <h2>Connections</h2>
-            <p>Manage your professional network</p>
-          </div>
-
-          <!-- Connection Tabs -->
-          <div class="tabs-container">
-            <button
-              v-for="tab in connectionTabs"
-              :key="tab.key"
-              @click="switchTab(tab.key)"
-              :class="['tab-button', activeTab === tab.key ? 'tab-active' : '']"
-            >
-              {{ tab.label }} {{ getConnectionCount(tab.key) }}
-            </button>
-          </div>
-
-          <!-- Loading State -->
-          <div v-if="isLoadingConnections" class="loading-state">
-            <p>Loading connections...</p>
-          </div>
-
-          <!-- Accepted Connections -->
-          <div v-else-if="activeTab === 'accepted'">
-            <div v-if="connections.accepted.length === 0" class="empty-state">
-              <p>No connections yet</p>
-            </div>
-            <div v-else>
-              <div class="connections-grid">
-                <div v-for="connection in connections.accepted" :key="connection.userId" class="connection-card">
-                  <div class="connection-header">
-                    <div class="connection-avatar">
-                      <img
-                        v-if="connection.picture"
-                        :src="connection.picture"
-                        :alt="connection.name"
-                        class="avatar-image"
-                      />
-                      <span v-else class="avatar-text">{{ getInitials(connection.name) }}</span>
-                    </div>
-                    <div class="connection-info">
-                      <h4>{{ connection.name }}</h4>
-                      <p class="connection-email" v-if="connection.email">{{ connection.email }}</p>
-                      <p class="connection-mobile" v-if="connection.mobile">{{ connection.mobile }}</p>
-                    </div>
-                  </div>
-                  <p class="connection-description" v-if="connection.message">{{ connection.message }}</p>
-                  <div class="connection-actions">
-                    <button class="btn btn-primary">Message</button>
-                    <button class="btn btn-secondary">View</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Load More Button for Accepted -->
-              <div v-if="canLoadMoreAccepted" class="load-more-container">
-                <button @click="loadMoreAccepted" :disabled="isLoadingMore" class="btn btn-secondary load-more-btn">
-                  <template v-if="isLoadingMore">Loading...</template>
-                  <template v-else>Load More</template>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pending Connections -->
-          <div v-else-if="activeTab === 'pending'">
-            <div v-if="connections.pending.length === 0" class="empty-state">
-              <p>No pending requests</p>
-            </div>
-            <div v-else>
-              <div class="connections-grid">
-                <div v-for="connection in connections.pending" :key="connection.userId" class="connection-card pending">
-                  <div class="connection-header">
-                    <div class="connection-avatar">
-                      <img
-                        v-if="connection.picture"
-                        :src="connection.picture"
-                        :alt="connection.name"
-                        class="avatar-image"
-                      />
-                      <span v-else class="avatar-text">{{ getInitials(connection.name) }}</span>
-                    </div>
-                    <div class="connection-info">
-                      <h4>{{ connection.name }}</h4>
-                      <p class="connection-email" v-if="connection.email">{{ connection.email }}</p>
-                      <p class="connection-mobile" v-if="connection.mobile">{{ connection.mobile }}</p>
-                    </div>
-                  </div>
-                  <p class="connection-description" v-if="connection.message">{{ connection.message }}</p>
-                  <div class="connection-actions">
-                    <button
-                      @click="acceptConnection(connection.userId)"
-                      :disabled="processingConnections.has(connection.userId)"
-                      class="btn btn-primary"
-                    >
-                      <template v-if="processingConnections.has(connection.userId)">Processing...</template>
-                      <template v-else>Accept</template>
-                    </button>
-                    <button
-                      @click="rejectConnection(connection.userId)"
-                      :disabled="processingConnections.has(connection.userId)"
-                      class="btn btn-secondary"
-                    >
-                      <template v-if="processingConnections.has(connection.userId)">Processing...</template>
-                      <template v-else>Reject</template>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Load More Button for Pending -->
-              <div v-if="canLoadMorePending" class="load-more-container">
-                <button @click="loadMorePending" :disabled="isLoadingMore" class="btn btn-secondary load-more-btn">
-                  <template v-if="isLoadingMore">Loading...</template>
-                  <template v-else>Load More</template>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Rejected Connections -->
-          <div v-else-if="activeTab === 'rejected'">
-            <div v-if="connections.rejected.length === 0" class="empty-state">
-              <p>No rejected connections</p>
-            </div>
-            <div v-else>
-              <div class="connections-grid">
-                <div
-                  v-for="connection in connections.rejected"
-                  :key="connection.userId"
-                  class="connection-card rejected"
-                >
-                  <div class="connection-header">
-                    <div class="connection-avatar">
-                      <img
-                        v-if="connection.picture"
-                        :src="connection.picture"
-                        :alt="connection.name"
-                        class="avatar-image"
-                      />
-                      <span v-else class="avatar-text">{{ getInitials(connection.name) }}</span>
-                    </div>
-                    <div class="connection-info">
-                      <h4>{{ connection.name }}</h4>
-                      <p class="connection-email" v-if="connection.email">{{ connection.email }}</p>
-                      <p class="connection-mobile" v-if="connection.mobile">{{ connection.mobile }}</p>
-                    </div>
-                  </div>
-                  <p class="connection-description" v-if="connection.message">{{ connection.message }}</p>
-                  <div class="connection-actions">
-                    <button
-                      @click="reconsiderConnection(connection.userId)"
-                      :disabled="processingConnections.has(connection.userId)"
-                      class="btn btn-secondary"
-                    >
-                      <template v-if="processingConnections.has(connection.userId)">Processing...</template>
-                      <template v-else>Reconsider</template>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Load More Button for Rejected -->
-              <div v-if="canLoadMoreRejected" class="load-more-container">
-                <button @click="loadMoreRejected" :disabled="isLoadingMore" class="btn btn-secondary load-more-btn">
-                  <template v-if="isLoadingMore">Loading...</template>
-                  <template v-else>Load More</template>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+       <ConnectionsModule />
       </div>
     </div>
   </div>
@@ -336,6 +164,7 @@ import { getConnectionRequests, getAcceptedConnections, respondToConnectionReque
 import { MessageSquare, Phone, Globe, Lock, Smartphone, Tag, MapPin, Edit2, ArrowRight } from "lucide-vue";
 import FullScreenLoader from "../components/Loader.vue";
 import ContactLink from "../elements/ContactLink.vue";
+import ConnectionsModule from "../elements/Connections.vue";
 
 export default {
   name: "ProfileSection",
@@ -351,6 +180,7 @@ export default {
     ArrowRight,
     FullScreenLoader,
     ContactLink,
+    ConnectionsModule,
   },
   data() {
     return {
