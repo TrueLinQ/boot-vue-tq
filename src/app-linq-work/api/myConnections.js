@@ -2,10 +2,6 @@ import apiClient from "./apiConfig";
 
 const BASE = "/connect";
 
-/**
- * Load connection requests (pending or rejected)
- * @param {Object} options - { ignored: boolean, type: string, pageSize: number, startIndex: number }
- */
 export const getConnectionRequests = async (options = {}) => {
   const { ignored = false, type = "professional", pageSize = 10, startIndex = 0 } = options;
   try {
@@ -20,10 +16,6 @@ export const getConnectionRequests = async (options = {}) => {
   }
 };
 
-/**
- * Get all accepted connections
- * @param {Object} options - { type: string, pageSize: number, startIndex: number }
- */
 export const getAcceptedConnections = async (options = {}) => {
   const { type = "professional", pageSize = 10, startIndex = 0 } = options;
   try {
@@ -35,12 +27,6 @@ export const getAcceptedConnections = async (options = {}) => {
   }
 };
 
-/**
- * Accept or reject a connection request
- * @param {string} requestId - The connection request ID
- * @param {boolean} value - true to accept, false to reject
- * @param {string} type - Type of connection (e.g., 'professional')
- */
 export const respondToConnectionRequest = async (requestId, value = true, type = "professional") => {
   try {
     const response = await apiClient.post(
