@@ -62,6 +62,16 @@ module.exports = AppConfig.extend({
       context: "/linq/work",
       entry: './src/main.js',
     },
+    "linq/reviews": {
+      // entry: "./src/main.js",
+      // template: "public/app-customer.html",
+      // filename: "app-customer.html",
+      // title: "Customer Aapp",
+      //chunks: ["chunk-vendors", "chunk-common", "customer"],
+      component: () => import("@/app-linq-reviews/AppReviews.vue"),
+      context: "/linq/reviews",
+      entry: './src/main.js',
+    },
     default: {
       component: () => import("@/app/App.vue"),
       context: "/",
