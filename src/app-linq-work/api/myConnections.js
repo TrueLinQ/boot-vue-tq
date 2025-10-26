@@ -1,6 +1,6 @@
 import apiClient from "./apiConfig";
 
-const BASE = "/connect";
+const BASE = "/api/connect";
 
 export const getConnectionRequests = async (options = {}) => {
   const { ignored = false, type = "professional", pageSize = 10, startIndex = 0 } = options;
