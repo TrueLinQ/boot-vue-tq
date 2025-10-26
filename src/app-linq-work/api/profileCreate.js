@@ -1,6 +1,6 @@
 import apiClient from "./apiConfig";
 
-const BASE = '/professional';
+const BASE = '/api/professional';
 
 export const getRequiredProvider = async (params = {}) => {
   try {
@@ -71,6 +71,7 @@ export const getUserProfile = async (profileId) => {
     throw error;
   }
 };
+
 
 export const sendConnection = async (params = {}) => {
   try {

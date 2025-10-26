@@ -20,7 +20,7 @@
     <!-- Authenticated - show navbar and content -->
     <div v-else class="app-container">
       <!-- Navbar Component -->
-      <Navbar :user="user" @logout="handleLogout" />
+      <Navbar :app="app" :user="user" @logout="handleLogout" />
 
       <!-- Main content -->
       <main class="main-content">
@@ -38,6 +38,12 @@ export default {
   name: "AuthLayout",
   components: {
     Navbar,
+  },
+  props: {
+    app: {
+      type: String,
+      default: "work",
+    },
   },
   data() {
     return {
@@ -69,22 +75,14 @@ export default {
     },
     redirectToAuth() {
       const currentPath = this.$route.fullPath;
-      window.location.href = `${APP_LOGIN_URL}?returnEndPoint=/linq/work${currentPath}`;
-    },
+      window.location.href = `${APP_LOGIN_URL}?returnEndPoint=/linq/${this.app}${currentPath}`;
 
-    redirectToAuth1() {
-      const currentPath = this.$route.fullPath;
-
-      const a = `https://app.truelinq.com/linq/auth/login?returnEndPoint=/linq/work${currentPath}`;
-      console.log("Redirecting to:", a);
-      window.location.href = a;
-
-      // window.location.href = `https://app.truelinq.com/linq/auth/google?returnEndPoint=${currentPath}`;
+      // window.location.href = `${APP_LOGIN_URL}?returnEndPoint=/linq/work${currentPath}`;
     },
     handleLogout() {
       this.user = null;
       // this.redirectToAuth();
-      window.location.href = APP_LOGOUT_URL
+      window.location.href = APP_LOGOUT_URL;
     },
   },
 };

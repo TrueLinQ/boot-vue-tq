@@ -4,7 +4,9 @@
       <div class="nav-content">
         <!-- Left side - Logo/Brand -->
         <div class="nav-brand">
-          <router-link to="/" class="brand-link"> TrueLinq Work </router-link>
+          <router-link to="/" class="brand-link"> 
+            TrueLinq {{ app.charAt(0).toUpperCase() + app.slice(1) }}
+          </router-link>
         </div>
 
         <!-- Right side - User menu -->
@@ -21,7 +23,7 @@
 
             <!-- Dropdown menu -->
             <div class="dropdown-menu" :class="{ 'dropdown-menu-visible': showDropdown }" @click.stop>
-              <button @click="handleProfileClick" class="dropdown-item dropdown-button" type="button">
+              <button   v-if="app === 'work'" @click="handleProfileClick" class="dropdown-item dropdown-button" type="button">
                 My Profile
               </button>
               <!-- <button @click="handleConnectionClick" class="dropdown-item dropdown-button" type="button">
@@ -44,6 +46,10 @@ export default {
     user: {
       type: Object,
       required: true,
+    },
+    app: {
+      type: String,
+      default: "work",
     },
   },
   data() {

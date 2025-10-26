@@ -7,7 +7,22 @@ export default BootRouter.route({
     {
       path: "/",
       name: "root",
-      component: () => import("./features/helloworld.vue"),
+      component: () => import("./features/List2.vue"),
+    },
+    {
+      path: "/list",
+      name: "list",
+      component: () => import("./features/ListReviews.vue"),
+    },
+    {
+      path: "/list2",
+      name: "list2",
+      component: () => import("./features/List2.vue"),
+    },
+    {
+      path: "/create",
+      name: "create",
+      component: () => import("./features/WriteReview.vue"),
     },
   ],
 });

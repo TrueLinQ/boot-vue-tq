@@ -1,7 +1,7 @@
 <template>
   <div class="app">
-    <!-- <AuthLayout /> -->
-     <router-view></router-view>
+    <AuthLayout app="reviews" />
+     <!-- <router-view></router-view> -->
   </div>
 </template>
 
@@ -12,7 +12,7 @@ import AuthLayout from '../app-linq-work/components/AuthLayout.vue';
 export default {
   name: "AppReviews",
   components: {
-    // AuthLayout,
+    AuthLayout,
   },
 };
 </script>
