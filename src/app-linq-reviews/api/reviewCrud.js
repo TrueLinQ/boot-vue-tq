@@ -36,3 +36,26 @@ export const deleteReview = async (id) => {
     throw error;
   }
 };
+
+// 4️⃣ Get Reviews (POST)
+export const getReviews = async (orgId, options = {}, params = {}) => {
+  const { byUser = false } = options;
+  try {
+    const response = await apiClient.post(`${BASE}/?orgId=${orgId}&byUser=${byUser}`, params);
+    return response;
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    throw error;
+  }
+};
+
+// 5️⃣ React to Review (POST)
+export const reactToReview = async (reviewId) => {
+  try {
+    const response = await apiClient.get(`${BASE}/update-reaction?reviewId=${reviewId}`);
+    return response;
+  } catch (error) {
+    console.error("Error reacting to review:", error);
+    throw error;
+  }
+};

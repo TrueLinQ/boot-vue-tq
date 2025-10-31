@@ -27,61 +27,64 @@
             />
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Overall Rating</label>
-            <div class="rating-container">
-              <button
-                v-for="star in 5"
-                :key="star"
-                type="button"
-                class="star-button"
-                :class="{ active: star <= rating }"
-                @click="rating = star"
+          <!-- Rest of form - only shown after company selection -->
+          <div v-if="reviewData.verificationId" class="form-fields-container">
+            <div class="form-group form-field-slide" style="animation-delay: 0.1s">
+              <label class="form-label">Overall Rating</label>
+              <div class="rating-container">
+                <button
+                  v-for="star in 5"
+                  :key="star"
+                  type="button"
+                  class="star-button"
+                  :class="{ active: star <= rating }"
+                  @click="rating = star"
+                >
+                  ★
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group form-field-slide" style="animation-delay: 0.2s">
+              <label class="form-label" for="title">Review Title</label>
+              <input
+                id="title"
+                v-model="reviewData.title"
+                type="text"
+                class="form-input"
+                placeholder="Summarize your review"
+                required
+              />
+            </div>
+
+            <div class="form-group form-field-slide" style="animation-delay: 0.3s">
+              <label class="form-label" for="review">Your Review</label>
+              <textarea
+                id="review"
+                v-model="reviewData.content"
+                class="form-textarea"
+                placeholder="Share your experience..."
+                required
+              ></textarea>
+            </div>
+
+            <div class="button-group form-field-slide" style="animation-delay: 0.4s">
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                @click="resetForm"
+                :disabled="isSubmitting"
               >
-                ★
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                :disabled="isSubmitting"
+              >
+                {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
               </button>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="title">Review Title</label>
-            <input
-              id="title"
-              v-model="reviewData.title"
-              type="text"
-              class="form-input"
-              placeholder="Summarize your review"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="review">Your Review</label>
-            <textarea
-              id="review"
-              v-model="reviewData.content"
-              class="form-textarea"
-              placeholder="Share your experience..."
-              required
-            ></textarea>
-          </div>
-
-          <div class="button-group">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              @click="resetForm"
-              :disabled="isSubmitting"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              :disabled="isSubmitting"
-            >
-              {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
-            </button>
           </div>
         </form>
 
@@ -149,7 +152,7 @@ export default {
 
       // Prepare payload matching API structure
       const payload = {
-        desciption: this.reviewData.content,
+        description: this.reviewData.content,
         overAllratings: this.rating.toString(),
         title: this.reviewData.title,
         verificationId: this.reviewData.verificationId,
@@ -198,7 +201,7 @@ export default {
     navigateToSearch() {
       // Navigate to search reviews page
       // Update this route based on your router setup
-      this.$router.push('/reviews'); // or whatever your search/browse page route is
+      this.$router.push('/'); // or whatever your search/browse page route is
     }
   },
 };
@@ -299,7 +302,7 @@ body {
 
 .star-button:hover,
 .star-button.active {
-  color: #000000;
+  color: #FFD700;
 }
 
 .button-group {
@@ -349,7 +352,6 @@ body {
   font-weight: 500;
 }
 
-/* Add these styles to your existing styles */
 .spinner-small {
   display: inline-block;
   width: 14px;
@@ -388,5 +390,28 @@ body {
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Form fields container */
+.form-fields-container {
+  margin-top: 1rem;
+}
+
+/* Slide up animation for form fields */
+.form-field-slide {
+  animation: slideUpFade 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
