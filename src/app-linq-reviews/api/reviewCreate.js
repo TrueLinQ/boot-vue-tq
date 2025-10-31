@@ -35,3 +35,14 @@ export const createBusiness = async (businessData) => {
     throw error;
   }
 };
+
+// 4️⃣ Get Business by Id(POST)
+export const getBusinessById = async (id) => { 
+  try {
+    const response = await apiClient.get(`/pub/domain/get?id=${id}`);
+    return response;
+  } catch (error) {
+    console.error("Error fetching business by ID:", error);
+    throw error;
+  }
+}

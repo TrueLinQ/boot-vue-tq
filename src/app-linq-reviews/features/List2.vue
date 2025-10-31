@@ -5,6 +5,10 @@
       <div class="search-card">
         <div class="search-section">
           <div class="search-bar">
+            <CompanySearch 
+              :simple-search="true" 
+              @company-selected="handleCompanySelected"
+            />
             <input
               type="text"
               v-model="searchQuery"
@@ -13,14 +17,17 @@
               @keyup.enter="performSearch(false)"
             />
             <div class="search-filter-container">
-              <button @click="performSearch(false)" class="search-btn" :disabled="loading">
+              <!-- <button @click="performSearch(false)" class="search-btn" :disabled="loading">
                 <Loader v-if="loading" class="loader-icon" :size="18" />
                 <Search v-else :size="18" />
-              </button>
-              <button @click="toggleFilters" class="filter-btn" :class="{ active: showFilters }">
-                <Funnel :size="18" />
-              </button>
+              </button> -->
             </div>
+          </div>
+
+          <!-- Active Company Filter Chip -->
+          <div v-if="selectedCompany" class="filter-chip">
+            <span>Company: {{ selectedCompany.name }}</span>
+            <button @click="clearCompanyFilter" class="chip-close">×</button>
           </div>
 
           <!-- Filter Section -->
@@ -80,7 +87,7 @@
               </button>
             </div>
           </div>
-          <p v-if="(searchQuery || selectedRating) && !loading">Showing results for your search criteria</p>
+          <p v-if="(searchQuery || selectedRating || selectedCompany) && !loading">Showing results for your search criteria</p>
         </div>
 
         <!-- Loading State -->
@@ -99,7 +106,7 @@
           <p>
             {{ activeTab === "my" ? "You haven't written any reviews yet" : "No reviews found matching your criteria" }}
           </p>
-          <button v-if="searchQuery || selectedRating" @click="clearFilters" class="btn btn-secondary">
+          <button v-if="searchQuery || selectedRating || selectedCompany" @click="clearFilters" class="btn btn-secondary">
             Clear Filters
           </button>
         </div>
@@ -129,7 +136,7 @@
                   >★</span
                 >
               </div>
-              <span class="review-date">{{ formatDate(review.createdAt) }}</span>
+              <span class="review-date">{{ formatDate(review.updatedAt) }}</span>
             </div>
 
             <!-- Review Title -->
@@ -230,18 +237,19 @@
     </teleport>
   </div>
 </template>
-
 <script>
 import { Search, Loader, ArrowRight, Funnel, Edit2, Trash2 } from "lucide-vue";
-import { getReviews } from "../api/reivewGet";
+import { getReviews, getReviewsByOrganization } from "../api/reivewGet";
 import { updateReview, deleteReview } from "../api/reviewCrud";
+import CompanySearch from "../components/SearchDropdown.vue";
 
 export default {
   components: {
-    Search,
+    CompanySearch,
+    // Search,
     Loader,
     ArrowRight,
-    Funnel,
+    // Funnel,
     Edit2,
     Trash2,
   },
@@ -266,6 +274,9 @@ export default {
       savingEdit: false,
       deletingReview: false,
 
+      // Company filter
+      selectedCompany: null,
+
       // API data
       reviews: [],
       totalCount: 0,
@@ -281,6 +292,24 @@ export default {
   },
 
   methods: {
+    handleCompanySelected(company) {
+      this.selectedCompany = company;
+      // Reset pagination and fetch reviews for this company
+      this.startIndex = 0;
+      this.reviews = [];
+      this.totalCount = 0;
+      this.performSearch(false);
+    },
+
+    clearCompanyFilter() {
+      this.selectedCompany = null;
+      // Reset and reload reviews without company filter
+      this.startIndex = 0;
+      this.reviews = [];
+      this.totalCount = 0;
+      this.performSearch(false);
+    },
+
     async performSearch(loadMore = false) {
       this.loading = true;
       this.error = null;
@@ -299,26 +328,49 @@ export default {
       }
 
       try {
-        const params = {
-          pageSize: this.pageSize,
-          startIndex: currentStartIndex,
-        };
+        let response;
 
-        // Add search parameter if search query exists
-        const options = {
-          search: this.searchQuery.trim() || "",
-          byUser: this.activeTab === "my",
-        };
+        // If a company is selected, use getReviewsByOrganization
+        if (this.selectedCompany && this.selectedCompany.id) {
+          const params = {
+            pageSize: this.pageSize,
+            startIndex: currentStartIndex,
+          };
 
-        console.log("Fetching reviews with params:", params, "and options:", options);
+          console.log("Fetching reviews for organization:", this.selectedCompany.id, "with params:", params);
+          response = await getReviewsByOrganization(this.selectedCompany.id, params);
+        } else {
+          // Otherwise use the regular getReviews
+          const params = {
+            pageSize: this.pageSize,
+            startIndex: currentStartIndex,
+          };
 
-        const response = await getReviews(options, params);
+          const options = {
+            search: this.searchQuery.trim() || "",
+            byUser: this.activeTab === "my",
+          };
+
+          console.log("Fetching reviews with params:", params, "and options:", options);
+          response = await getReviews(options, params);
+        }
 
         if (response && response.data && response.data.results) {
           const result = response.data.results[0];
 
           if (result && result.review && Array.isArray(result.review)) {
-            const newReviews = result.review;
+            let newReviews = result.review;
+
+            // If fetching by organization, add company details to each review
+            if (this.selectedCompany && this.selectedCompany.id) {
+              newReviews = newReviews.map(review => ({
+                ...review,
+                organizationDetails: {
+                  name: this.selectedCompany.name,
+                  logo: this.selectedCompany.logo,
+                }
+              }));
+            }
 
             if (loadMore) {
               // Append new reviews to existing list
@@ -397,6 +449,7 @@ export default {
       this.searchQuery = "";
       this.selectedRating = "";
       this.sortBy = "recent";
+      this.selectedCompany = null;
       // Reset pagination state before performing search
       this.startIndex = 0;
       this.reviews = [];
@@ -448,7 +501,7 @@ export default {
 
       try {
         const reviewData = {
-          overAllRating: this.editingData.rating,
+          overAllratings: this.editingData.rating,
           title: this.editingData.title,
           description: this.editingData.description,
         };
@@ -545,15 +598,23 @@ export default {
 
       const date = new Date(dateString);
       const now = new Date();
-      const diffTime = Math.abs(now - date);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const diffMs = now - date;
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHr = Math.floor(diffMin / 60);
+      const diffDay = Math.floor(diffHr / 24);
 
-      if (diffDays === 0) return "Today";
-      if (diffDays === 1) return "Yesterday";
-      if (diffDays < 7) return `${diffDays} days ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-      if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-      return `${Math.floor(diffDays / 365)} years ago`;
+      if (diffSec < 60) return `${diffSec} seconds ago`;
+      if (diffMin < 60) return `${diffMin} minutes ago`;
+      if (diffHr < 24) return `${diffHr} hours ago`;
+
+      if (diffDay === 0) return "Today";
+      if (diffDay === 1) return "Yesterday";
+      if (diffDay < 7) return `${diffDay} days ago`;
+      if (diffDay < 30) return `${Math.floor(diffDay / 7)} weeks ago`;
+      if (diffDay < 365) return `${Math.floor(diffDay / 30)} months ago`;
+
+      return `${Math.floor(diffDay / 365)} years ago`;
     },
   },
 
@@ -563,8 +624,73 @@ export default {
   },
 };
 </script>
-
 <style scoped>
+/* Add this to your existing styles */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #1976d2;
+  margin-top: 8px;
+}
+
+.chip-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #1976d2;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.chip-close:hover {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+/* Add this to your existing styles */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #1976d2;
+  margin-top: 8px;
+}
+
+.chip-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #1976d2;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
 /* Search Card Styles */
 .search-card {
   margin-bottom: 20px;
@@ -587,17 +713,20 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+   width: 100%;
 }
 
 .search-input {
-  flex: 1;
-  padding: 16px 16px 16px 16px;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 1rem;
-  color: #000;
-  transition: border-color 0.2s ease;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    background: white;
+    position: relative;
+    z-index: 1;
 }
 
 .search-input:focus {

@@ -7,7 +7,7 @@ export default BootRouter.route({
     {
       path: "/",
       name: "root",
-      component: () => import("./features/List2.vue"),
+      component: () => import("./features/HomePage.vue"),
     },
     {
       path: "/list",
@@ -23,6 +23,11 @@ export default BootRouter.route({
       path: "/create",
       name: "create",
       component: () => import("./features/WriteReview.vue"),
+    },
+    {
+      path: "/company/:id",
+      name: "company",
+      component: () => import("./features/CompanyPage.vue"),
     },
   ],
 });

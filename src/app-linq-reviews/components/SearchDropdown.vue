@@ -1,6 +1,6 @@
 <template>
   <div class="company-search-wrapper" ref="wrapper">
-    <label class="form-label" for="company-search">Company *</label>
+    <label  v-if ="!simpleSearch" class="form-label" for="company-search">Company *</label>
     <div class="input-container">
       <img
         v-if="selectedCompany && selectedCompany.logo"
@@ -20,6 +20,9 @@
         autocomplete="off"
         required
       />
+      <button v-if="selectedCompany" @click="clearSelection" class="clear-btn" type="button" title="Clear selection">
+        ×
+      </button>
     </div>
 
     <div v-if="isOpen" class="dropdown">
@@ -55,6 +58,10 @@ export default {
     value: {
       type: String,
       default: "",
+    },
+    simpleSearch: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -96,6 +103,12 @@ export default {
         clearTimeout(this.searchTimeout);
       }
 
+      // Only search if at least 3 characters
+      if (this.searchTerm.trim().length < 3) {
+        this.companies = [];
+        return;
+      }
+
       // Debounce search
       this.searchTimeout = setTimeout(() => {
         this.performSearch();
@@ -114,13 +127,13 @@ export default {
     async performSearch() {
       const query = this.searchTerm.trim();
 
-      if (!query) {
+      if (!query || query.length < 3) {
         this.companies = [];
         return;
       }
 
       this.isLoading = true;
-      this.loadingMessage = "Searching...";
+      this.loadingMessage = "Searching for companies...";
       this.companies = [];
 
       try {
@@ -132,8 +145,15 @@ export default {
           this.companies = searchResponse.data.results;
           this.isLoading = false;
         } else {
-          // No businesses found, search the web
-          await this.searchWeb(query);
+          // No businesses found
+          if (this.simpleSearch) {
+            // If simple search mode, don't proceed to web search
+            this.isLoading = false;
+            this.noResultsMessage = "No company found.";
+          } else {
+            // Proceed to web search
+            await this.searchWeb(query);
+          }
         }
       } catch (error) {
         console.error("Search error:", error);
@@ -143,7 +163,7 @@ export default {
     },
 
     async searchWeb(query) {
-      this.loadingMessage = "🔍 Searching the web for companies…";
+      this.loadingMessage = "Searching the web for companies...";
 
       try {
         // Construct URL from query
@@ -154,17 +174,18 @@ export default {
 
         if (metaResponse.data && metaResponse.data.results && metaResponse.data.results.length > 0) {
           // Metadata found, create the business
+          this.loadingMessage = "Creating company profile...";
           const metaData = metaResponse.data.results[0];
           await this.createNewBusiness(metaData);
         } else {
           // No metadata found
           this.isLoading = false;
-          this.noResultsMessage = "❌ No company found.";
+          this.noResultsMessage = "No company found.";
         }
       } catch (error) {
         console.error("Web search error:", error);
         this.isLoading = false;
-        this.noResultsMessage = "❌ No company found.";
+        this.noResultsMessage = "No company found.";
       }
     },
 
@@ -222,6 +243,14 @@ export default {
         this.isOpen = false;
       }
     },
+    clearSelection() {
+      this.searchTerm = "";
+      this.selectedCompany = null;
+      this.companies = [];
+      this.isOpen = false;
+      this.$emit("input", "");
+      this.$emit("company-selected", null);
+    },
   },
 };
 </script>
@@ -230,6 +259,7 @@ export default {
 .company-search-wrapper {
   position: relative;
   margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .form-label {
@@ -340,6 +370,32 @@ export default {
   border-top: 2px solid #333;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: #e0e0e0;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.clear-btn:hover {
+  background: #d0d0d0;
+  color: #333;
 }
 
 @keyframes spin {
