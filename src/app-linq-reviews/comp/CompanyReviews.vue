@@ -7,7 +7,7 @@
             <h2>Reviews</h2>
             <p>See what people are saying</p>
           </div>
-          
+
           <!-- Sort Dropdown -->
           <div class="sort-dropdown">
             <select id="sort-select" v-model="selectedSort" @change="handleSortChange" class="sort-select">
@@ -42,14 +42,8 @@
         </div>
         <div v-else>
           <div class="connections-grid">
-            <ReviewCard
-              v-for="review in reviews"
-              :key="`${review.id}-${review.updatedAt}`"
-              :review="review"
-              :can-edit="false"
-              :is-updating="false"
-              @react="handleReactToReview"
-            />
+            <ReviewCard v-for="review in reviews" :key="`${review.id}-${review.updatedAt}`" :review="review"
+              :can-edit="false" :is-updating="false" @react="handleReactToReview" />
           </div>
 
           <!-- Load More Button for All Reviews -->
@@ -68,17 +62,10 @@
           <p>You haven't written any reviews yet</p>
         </div>
         <div v-else>
-          <div class="connections-grid">
-            <ReviewCard
-              v-for="review in reviews"
-              :key="`${review.id}-${review.updatedAt}`"
-              :review="review"
-              :can-edit="true"
-              :is-updating="updatingReviewId === review.id"
-              @update="handleUpdateReview"
-              @delete="confirmDelete"
-              @react="handleReactToReview"
-            />
+          <div class="connections-grid my">
+            <ReviewCard v-for="review in reviews" :key="`${review.id}-${review.updatedAt}`" :review="review"
+              :can-edit="true" :is-updating="updatingReviewId === review.id" @update="handleUpdateReview"
+              @delete="confirmDelete" @react="handleReactToReview" />
           </div>
 
           <!-- Load More Button for My Reviews -->
@@ -93,12 +80,7 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <DeleteModal
-      :show="showDeleteModal"
-      :is-deleting="deletingReview"
-      @confirm="deleteReview"
-      @cancel="cancelDelete"
-    />
+    <DeleteModal :show="showDeleteModal" :is-deleting="deletingReview" @confirm="deleteReview" @cancel="cancelDelete" />
   </div>
 </template>
 
@@ -106,8 +88,7 @@
 import ReviewCard from "./ReviewCard.vue";
 import DeleteModal from "./DeleteModal.vue";
 import { updateReview, deleteReview, reactToReview } from "../api/reviewCrud";
-import { getReviews } from "../api/reivewGet";
-
+import { getReviews } from "../api/reviewCrud";
 
 export default {
   name: "CompanyReviews",
@@ -151,7 +132,7 @@ export default {
       const [sortBy, sortOrder] = this.selectedSort.split('-');
       this.sortBy = sortBy;
       this.sortOrder = sortOrder === 'asc' ? 1 : 0;
-      
+
       this.startIndex = 0;
       this.reviews = [];
       this.totalCount = 0;
@@ -161,21 +142,21 @@ export default {
     async handleReactToReview(reviewId) {
       try {
         const response = await reactToReview(reviewId);
-        
+
         if (response) {
           const index = this.reviews.findIndex((r) => r.id === reviewId);
           if (index > -1) {
             const currentReview = this.reviews[index];
             const wasReacted = currentReview.reactedByUser;
             const currentCount = currentReview.helpfulCount || 0;
-            
+
             // Toggle reaction state
             const updatedReview = {
               ...currentReview,
               reactedByUser: !wasReacted,
               helpfulCount: wasReacted ? Math.max(0, currentCount - 1) : currentCount + 1,
             };
-            
+
             this.reviews.splice(index, 1, updatedReview);
           }
         }
@@ -282,29 +263,91 @@ export default {
       }
     },
 
+    // async handleUpdateReview(reviewId, reviewData) {
+    //   this.updatingReviewId = reviewId;
+    //   this.error = null;
+
+    //   try {
+    //     const response = await updateReview(reviewId, reviewData);
+
+    //     if (response && response.data) {
+    //       const index = this.reviews.findIndex((r) => r.id === reviewId);
+    //       if (index > -1) {
+    //         const updatedReview = {
+    //           ...this.reviews[index],
+    //           overAllRating: reviewData.overAllratings,
+    //           title: reviewData.title,
+    //           description: reviewData.description,
+    //           updatedAt: new Date().toISOString(),
+    //         };
+
+    //         this.reviews.splice(index, 1, updatedReview);
+    //       }
+    //       this.$nextTick(() => {
+    //         this.updatingReviewId = null;
+    //       });
+    //     }
+    //   } catch (error) {
+    //     this.error = `Failed to update review: ${error.message}`;
+    //     console.error("Update review error:", error);
+    //     alert(`Failed to update review: ${error.message}`);
+    //     throw error;
+    //   } finally {
+    //     this.updatingReviewId = null;
+    //   }
+    // },
+
+
+    // async handleUpdateReview(reviewId, reviewData) {
+    //   this.updatingReviewId = reviewId;
+    //   this.error = null;
+
+    //   try {
+    //     const response = await updateReview(reviewId, reviewData);
+
+    //     if (response && response.data) {
+    //       const index = this.reviews.findIndex((r) => r.id === reviewId);
+    //       if (index > -1) {
+    //         const updatedReview = {
+    //           ...this.reviews[index],
+    //           overAllRating: reviewData.overAllratings,
+    //           title: reviewData.title,
+    //           description: reviewData.description,
+    //           ratings: reviewData.ratings || this.reviews[index].ratings, // ADD THIS
+    //           updatedAt: new Date().toISOString(),
+    //         };
+
+    //         this.reviews.splice(index, 1, updatedReview);
+    //       }
+    //       this.$nextTick(() => {
+    //         this.updatingReviewId = null;
+    //       });
+    //     }
+    //   } catch (error) {
+    //     this.error = `Failed to update review: ${error.message}`;
+    //     console.error("Update review error:", error);
+    //     alert(`Failed to update review: ${error.message}`);
+    //     throw error;
+    //   } finally {
+    //     this.updatingReviewId = null;
+    //   }
+    // },
+
+
     async handleUpdateReview(reviewId, reviewData) {
       this.updatingReviewId = reviewId;
       this.error = null;
 
       try {
+        // Make the API call
         const response = await updateReview(reviewId, reviewData);
 
         if (response && response.data) {
-          const index = this.reviews.findIndex((r) => r.id === reviewId);
-          if (index > -1) {
-            const updatedReview = {
-              ...this.reviews[index],
-              overAllRating: reviewData.overAllratings,
-              title: reviewData.title,
-              description: reviewData.description,
-              updatedAt: new Date().toISOString(),
-            };
+          // Keep the "Saving..." state visible for a moment
+          await new Promise(resolve => setTimeout(resolve, 500));
 
-            this.reviews.splice(index, 1, updatedReview);
-          }
-          this.$nextTick(() => {
-            this.updatingReviewId = null;
-          });
+          // Then refresh the reviews list
+          await this.loadReviews(false);
         }
       } catch (error) {
         this.error = `Failed to update review: ${error.message}`;
@@ -312,10 +355,10 @@ export default {
         alert(`Failed to update review: ${error.message}`);
         throw error;
       } finally {
+        // Only clear the updating state after everything is done
         this.updatingReviewId = null;
       }
     },
-
     confirmDelete(reviewId) {
       this.reviewToDelete = reviewId;
       this.showDeleteModal = true;
@@ -495,6 +538,11 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+}
+
+.connections-grid.my {
+  grid-template-columns: repeat(1, 1fr);
+
 }
 
 /* Load More */

@@ -18,6 +18,24 @@
       </div>
     </div>
 
+    <!-- ADD THIS: Detailed Ratings Toggle Button -->
+    <div v-if="!isEditing && hasDetailedRatings && review.overAllRating <= 3" class="detailed-ratings-toggle">
+      <button @click="showDetailedRatings = !showDetailedRatings" class="toggle-btn">
+        <span>{{ showDetailedRatings ? "Hide" : "View" }} Detailed Ratings</span>
+        <svg :class="{ rotated: showDetailedRatings }" width="16" height="16" viewBox="0 0 16 16" fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- ADD THIS: Detailed Ratings Component (collapsible) -->
+    <transition name="slide-fade">
+      <DetailedRatingsDisplay v-if="!isEditing && showDetailedRatings && hasDetailedRatings"
+        :ratings="review.ratings" />
+    </transition>
+
     <!-- Review Title -->
     <h5 v-if="review.title" class="review-title">{{ review.title }}</h5>
 
@@ -28,11 +46,8 @@
         <p class="description" :class="{ expanded: isExpanded }">
           {{ review.description }}
         </p>
-        <button
-          v-if="review.description && review.description.length > 150"
-          @click="toggleExpansion"
-          class="see-more-btn"
-        >
+        <button v-if="review.description && review.description.length > 150" @click="toggleExpansion"
+          class="see-more-btn">
           {{ isExpanded ? "See Less" : "See More" }}
         </button>
       </template>
@@ -41,13 +56,8 @@
       <template v-else>
         <div class="inline-edit-rating">
           <div class="stars-input">
-            <span
-              v-for="i in 5"
-              :key="i"
-              class="star-input"
-              :class="{ filled: i <= editData.rating }"
-              @click="editData.rating = i"
-            >
+            <span v-for="i in 5" :key="i" class="star-input" :class="{ filled: i <= editData.rating }"
+              @click="editData.rating = i">
               ★
             </span>
           </div>
@@ -55,12 +65,11 @@
 
         <input v-model="editData.title" class="form-input-inline" placeholder="Review title..." />
 
-        <textarea
-          v-model="editData.description"
-          class="form-textarea-inline"
-          rows="4"
-          placeholder="Write your review..."
-        ></textarea>
+        <textarea v-model="editData.description" class="form-textarea-inline" rows="4"
+          placeholder="Write your review..."></textarea>
+
+        <DetailedRatings v-if="ratingCategories.length > 0 && editData.rating <= 3" :categories="ratingCategories"
+          v-model="editData.detailedRatings" />
 
         <div class="inline-edit-actions">
           <button @click="cancelEdit" class="btn btn-secondary btn-sm" :disabled="isUpdating">Cancel</button>
@@ -73,14 +82,10 @@
     </div>
 
     <!-- Helpful Section -->
-    <div class="helpful-section" v-if="!isEditing">
+    <div class="helpful-section" v-if="!isEditing && !canEdit">
       <span class="helpful-label">Helpful?</span>
-      <button 
-        @click="handleReaction" 
-        :disabled="isReacting"
-        class="helpful-btn"
-        :class="{ active: review.reactedByUser }"
-      >
+      <button @click="handleReaction" :disabled="isReacting" class="helpful-btn"
+        :class="{ active: review.reactedByUser }">
         <ThumbsUp :size="16" />
         <span v-if="review.helpfulCount && review.helpfulCount > 0" class="helpful-count">
           {{ review.helpfulCount }}
@@ -102,6 +107,10 @@
 
 <script>
 import { Edit2, Trash2, Loader, ThumbsUp } from "lucide-vue";
+import DetailedRatingsDisplay from "../components/DetailedRatingsDisplay.vue";
+
+import DetailedRatings from "../components/DetailedRatings.vue";
+import { getRatingConfig } from "../api/reviewCrud";
 
 export default {
   name: "ReviewCard",
@@ -110,6 +119,9 @@ export default {
     Trash2,
     Loader,
     ThumbsUp,
+    DetailedRatingsDisplay, // ADD THIS
+    DetailedRatings // ADD THIS
+
   },
   props: {
     review: {
@@ -131,10 +143,15 @@ export default {
       isExpanded: false,
       isEditing: false,
       isReacting: false,
+      showDetailedRatings: false, // ADD THIS
+      isLoadingRatingConfig: false, // ADD
+      ratingCategories: [], // ADD - to store getRatingConfig results
+
       editData: {
         rating: 0,
         title: "",
         description: "",
+        detailedRatings: {},
       },
     };
   },
@@ -145,7 +162,7 @@ export default {
 
     async handleReaction() {
       if (this.isReacting) return;
-      
+
       this.isReacting = true;
       try {
         await this.$emit("react", this.review.id);
@@ -155,52 +172,124 @@ export default {
         this.isReacting = false;
       }
     },
-
-    startEdit() {
+    async startEdit() {
       this.isEditing = true;
+      this.isLoadingRatingConfig = true;
+
+      // Set basic edit data
       this.editData = {
         rating: this.review.overAllRating || 0,
         title: this.review.title || "",
         description: this.review.description || "",
+        detailedRatings: {},
       };
+
+      try {
+        // Fetch rating config to get all available categories and tags
+        const response = await getRatingConfig(this.$parent.organizationId);
+
+        if (response && response.data && response.data.results) {
+          this.ratingCategories = response.data.results;
+
+          // Pre-fill existing ratings if they exist
+          if (this.review.ratings && this.review.ratings.length > 0) {
+            const prefilledRatings = {};
+
+            this.review.ratings.forEach((rating) => {
+              prefilledRatings[rating.id] = {
+                value: parseInt(rating.value) || 0,
+                tagIds: rating.tagId || [],
+              };
+            });
+
+            this.editData.detailedRatings = prefilledRatings;
+          } else {
+            // Initialize empty ratings for all categories
+            const initialRatings = {};
+            this.ratingCategories.forEach((cat) => {
+              initialRatings[cat.id] = {
+                value: 0,
+                tagIds: [],
+              };
+            });
+            this.editData.detailedRatings = initialRatings;
+          }
+        }
+      } catch (error) {
+        console.error("Error loading rating config:", error);
+        alert("Failed to load rating options. Please try again.");
+        this.cancelEdit();
+      } finally {
+        this.isLoadingRatingConfig = false;
+      }
     },
 
     cancelEdit() {
       this.isEditing = false;
+      this.ratingCategories = [];
       this.editData = {
         rating: 0,
         title: "",
         description: "",
+        detailedRatings: {},
       };
     },
 
     async saveEdit() {
       if (this.isUpdating) return;
 
-      // Validate
+      // Validate overall rating
       if (!this.editData.rating || this.editData.rating < 1 || this.editData.rating > 5) {
         alert("Please provide a rating between 1 and 5 stars");
         return;
       }
 
+      // Validate description
       if (!this.editData.description || this.editData.description.trim().length === 0) {
         alert("Please write a review description");
         return;
       }
 
       try {
-        // Emit the update event and wait for parent to handle it
-        this.$emit("update", this.review.id, {
+        // Transform detailedRatings to API format
+        const ratingsArray = Object.keys(this.editData.detailedRatings)
+          .map((categoryId) => {
+            const rating = this.editData.detailedRatings[categoryId];
+
+            if (rating.value && rating.value > 0) {
+              return {
+                id: categoryId,
+                value: rating.value.toString(),
+                tagId: rating.tagIds || [],
+              };
+            }
+            return null;
+          })
+          .filter((r) => r !== null);
+
+        // Prepare update payload
+        const updatePayload = {
           overAllratings: this.editData.rating,
           title: this.editData.title,
           description: this.editData.description,
-        });
+        };
+
+        if (ratingsArray.length > 0) {
+          updatePayload.ratings = ratingsArray;
+        }
+
+        // Emit the update event - WAIT for it to complete
+        await this.$emit("update", this.review.id, updatePayload);
+
+        // DON'T exit edit mode here - let the parent handle it
+        // The parent will control when to close edit mode
+
       } catch (error) {
         console.error("Failed to save edit:", error);
         alert("Failed to update review. Please try again.");
       }
+      // DON'T reset edit data or exit edit mode here
     },
-
     getInitials(name) {
       if (!name) return "?";
       return name
@@ -235,10 +324,26 @@ export default {
       return `${Math.floor(diffDay / 365)} years ago`;
     },
   },
+  computed: {
+    hasDetailedRatings() {
+      return this.review.ratings && this.review.ratings.length > 0;
+    },
+  },
 };
 </script>
 
 <style scoped>
+.loading-config {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  color: #666;
+}
+
 .review-card {
   background: #fff;
   border: 1px solid #e0e0e0;
@@ -314,7 +419,7 @@ export default {
 }
 
 .star.filled {
-  color: #FFD700;
+  color: #ffd700;
 }
 
 .review-title {
@@ -396,6 +501,7 @@ export default {
   background: #d4ecd4;
   border-color: #d4ecd4;
 }
+
 /* 
 .helpful-btn.active {
   background: #2d7d2d;
@@ -431,7 +537,7 @@ export default {
 
 .star-input:hover,
 .star-input.filled {
-  color: #000;
+  color: #ffd700;
 }
 
 .form-input-inline {
@@ -556,10 +662,68 @@ export default {
   animation: spin 1s linear infinite;
 }
 
+/* Detailed Ratings Toggle */
+.detailed-ratings-toggle {
+  margin-bottom: 12px;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+
+
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.toggle-btn svg {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toggle-btn svg.rotated {
+  transform: rotate(180deg);
+}
+
+/* Transition for detailed ratings */
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

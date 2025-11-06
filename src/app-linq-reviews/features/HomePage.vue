@@ -1,24 +1,12 @@
 <template>
   <div class="home-container">
-    <div class="home-content">
-      <div class="hero-section">
-        <h1 class="hero-title">Find and Review Companies</h1>
-        <p class="hero-subtitle">Search for companies and read reviews from real users</p>
-      </div>
+    <FullScreenLoader v-if="loading" /> 
+    <div v-show="!loading" class="hero-wrapper">
+      <Hero2 @company-selected="handleCompanySelected" @write-review="writeReview" />
 
-      <div class="search-card">
-        <CompanySearch 
-          :simple-search="true" 
-          @company-selected="handleCompanySelected"
-        />
-      </div>
-
-      <div class="divider">
-        <span class="divider-text">or</span>
-      </div>
-
-      <div class="review-button-wrapper">
-        <WriteReviewButton @click="writeReview" />
+      <!-- Company Listings Section -->
+      <div class="max-container home-company-listings">
+        <CompanyLisings @loading-change="handleLoadingChange" />
       </div>
     </div>
   </div>
@@ -27,29 +15,55 @@
 <script>
 import CompanySearch from "../components/SearchDropdown.vue";
 import WriteReviewButton from "../components/WriteReviewButton.vue";
+import CompanyLisings from "../components/CompanyLisings.vue";
+import HeroSearchSection from "../components/HeroSearchSection.vue";
+import Hero2 from "../components/Hero2.vue";
+import FullScreenLoader from "../../app-linq-work/components/Loader.vue";
 
 export default {
   components: {
     CompanySearch,
     WriteReviewButton,
+    CompanyLisings,
+    HeroSearchSection,
+    Hero2,
+    FullScreenLoader
   },
-  
+
+  data() {
+    return {
+      loading: true  // Start with true
+    };
+  },
+
   methods: {
+    handleLoadingChange(isLoading) {
+      console.log('Loading change:', isLoading); // Debug log
+      this.loading = isLoading;
+    },
+    
     handleCompanySelected(company) {
       if (company && company.id) {
         this.$router.push(`/company/${company.id}`);
       }
     },
-    
+
     writeReview() {
-      // Navigate to write review page
-      this.$router.push('/create');
+      this.$router.push("/create");
     },
   },
 };
 </script>
 
 <style scoped>
+.hidden {
+  display: none;
+}
+.hero-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .home-container {
   min-height: 100vh;
   padding: 60px 20px 40px 20px;
@@ -58,7 +72,7 @@ export default {
 }
 
 .home-content {
-  max-width: 800px;
+  max-width: 1200px;
   width: 100%;
 }
 
@@ -100,7 +114,7 @@ export default {
 
 .divider::before,
 .divider::after {
-  content: '';
+  content: "";
   flex: 1;
   border-bottom: 1px solid #e0e0e0;
 }
@@ -141,9 +155,13 @@ export default {
   .hero-subtitle {
     font-size: 0.875rem;
   }
-  
+
   .divider {
     margin: 20px auto;
   }
+}
+
+.home-company-listings {
+  margin-top: 30px;
 }
 </style>

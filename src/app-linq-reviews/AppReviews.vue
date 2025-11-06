@@ -1,13 +1,13 @@
 <template>
   <div class="app">
     <AuthLayout app="reviews" />
-     <!-- <router-view></router-view> -->
+    <!-- <router-view></router-view> -->
   </div>
 </template>
 
 <script>
-import { RouterLink } from 'vue-router';
-import AuthLayout from '../app-linq-work/components/AuthLayout.vue';
+import { RouterLink } from "vue-router";
+import AuthLayout from "../app-linq-work/components/AuthLayout.vue";
 
 export default {
   name: "AppReviews",
@@ -32,4 +32,11 @@ body {
   color: #000;
   line-height: 1.5;
 }
+
+.max-container {
+  max-width: 800px;      /* caps it at 800px */
+  margin: 0 auto;        /* centers it */
+ 
+}
+
 </style>

@@ -46,3 +46,14 @@ export const getBusinessById = async (id) => {
     throw error;
   }
 }
+
+// 5️⃣ Get All Businesses (POST)
+export const getAllBusinesses = async (params = {}) => {
+  try {
+    const response = await apiClient.post(`/pub/domain/get`,params);
+    return response;
+  } catch (error) {
+    console.error("Error fetching all businesses:", error);
+    throw error;
+  }
+};
