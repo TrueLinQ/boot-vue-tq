@@ -1,16 +1,11 @@
 <template>
   <div class="container">
     <FullScreenLoader v-if="isSubmitting" />
-    
+
     <!-- Show success component after submission -->
-    <ReviewSubmitted
-      v-else-if="submitted"
-      :company-name="reviewData.company"
-      :company-logo="selectedCompanyLogo"
-      @write-another="resetForm"
-      @search-reviews="navigateToSearch"
-    />
-    
+    <ReviewSubmitted v-else-if="submitted" :company-name="reviewData.company" :company-logo="selectedCompanyLogo"
+      @write-another="resetForm" @search-reviews="navigateToSearch" />
+
     <!-- Show form when not submitted -->
     <div v-else class="review-container">
       <div class="header">
@@ -21,10 +16,8 @@
       <div class="review-form">
         <form @submit.prevent="submitReview">
           <div class="form-group">
-            <CompanySearch 
-              v-model="reviewData.company" 
-              @company-selected="handleCompanySelected"
-            />
+            <CompanySearch v-model="reviewData.company" @company-selected="handleCompanySelected"
+              :preselected-company="preselectedCompany" />
           </div>
 
           <!-- Rest of form - only shown after company selection -->
@@ -32,82 +25,64 @@
             <div class="form-group form-field-slide" style="animation-delay: 0.1s">
               <label class="form-label">Overall Rating</label>
               <div class="rating-container">
-                <button
-                  v-for="star in 5"
-                  :key="star"
-                  type="button"
-                  class="star-button"
-                  :class="{ active: star <= rating }"
-                  @click="rating = star"
-                >
+                <button v-for="star in 5" :key="star" type="button" class="star-button"
+                  :class="{ active: star <= rating }" @click="handleRatingChange(star)">
                   ★
                 </button>
+              </div>
+
+              <div v-if="showDetailedRatings && ratingCategories.length > 0" class="form-field-slide"
+                style="animation-delay: 0.4s">
+                <DetailedRatings :categories="ratingCategories" v-model="detailedRatingsData" />
               </div>
             </div>
 
             <div class="form-group form-field-slide" style="animation-delay: 0.2s">
               <label class="form-label" for="title">Review Title</label>
-              <input
-                id="title"
-                v-model="reviewData.title"
-                type="text"
-                class="form-input"
-                placeholder="Summarize your review"
-                required
-              />
+              <input id="title" v-model="reviewData.title" type="text" class="form-input"
+                placeholder="Summarize your review" required />
             </div>
 
             <div class="form-group form-field-slide" style="animation-delay: 0.3s">
               <label class="form-label" for="review">Your Review</label>
-              <textarea
-                id="review"
-                v-model="reviewData.content"
-                class="form-textarea"
-                placeholder="Share your experience..."
-                required
-              ></textarea>
+              <textarea id="review" v-model="reviewData.content" class="form-textarea"
+                placeholder="Share your experience..." required></textarea>
             </div>
 
-            <div class="button-group form-field-slide" style="animation-delay: 0.4s">
-              <button 
-                type="button" 
-                class="btn btn-secondary" 
-                @click="resetForm"
-                :disabled="isSubmitting"
-              >
+            <!-- Detailed Ratings Component - shown only for ratings <= 3 -->
+
+            <div class="button-group form-field-slide"
+              :style="{ animationDelay: showDetailedRatings ? '0.5s' : '0.4s' }">
+              <button type="button" class="btn btn-secondary" @click="resetForm" :disabled="isSubmitting">
                 Cancel
               </button>
-              <button 
-                type="submit" 
-                class="btn btn-primary"
-                :disabled="isSubmitting"
-              >
-                {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
+              <button type="submit" class="btn btn-primary" :disabled="isSubmitting || isLoadingCategories">
+                {{ isSubmitting ? "Submitting..." : "Submit Review" }}
               </button>
             </div>
           </div>
         </form>
 
-        <div v-if="errorMessage" class="error-message">
-          ✗ {{ errorMessage }}
-        </div>
+        <div v-if="errorMessage" class="error-message">✗ {{ errorMessage }}</div>
       </div>
     </div>
   </div>
 </template>
-
 <script>
 // Import the createReview API function
-import { createReview } from "../api/reviewCrud";
+import { createReview, getRatingConfig } from "../api/reviewCrud";
+import { getBusinessById } from "../api/businessCrud";
 import FullScreenLoader from "../../app-linq-work/components/Loader.vue";
 import ReviewSubmitted from "../components/ReviewSubmitted.vue";
+import DetailedRatings from "../components/DetailedRatings.vue";
 
 export default {
   name: "ReviewForm",
   components: {
     CompanySearch: () => import("../components/SearchDropdown.vue"),
     FullScreenLoader,
-    ReviewSubmitted
+    ReviewSubmitted,
+    DetailedRatings,
   },
   data() {
     return {
@@ -118,21 +93,107 @@ export default {
         content: "",
         verificationId: "",
       },
-      selectedCompanyLogo: "", // Store company logo
+      selectedCompanyLogo: "",
+      preselectedCompany: null,
       submitted: false,
       isSubmitting: false,
+      isLoadingCategories: false,
       errorMessage: "",
+      showDetailedRatings: false,
+      ratingCategories: [],
+      detailedRatingsData: {},
     };
+  },
+  watch: {
+    detailedRatingsData: {
+      deep: true,
+      handler(newVal) {
+        console.log("detailedRatingsData changed:", newVal);
+        console.log("detailedRatingsData keys:", Object.keys(newVal));
+      },
+    },
+  },
+  async mounted() {
+    const companyId = this.$route.query.companyId;
+    const companyName = this.$route.query.companyName;
+    const companyLogo = this.$route.query.companyLogo;
+
+    if (companyId && companyName) {
+      try {
+        const response = await getBusinessById(companyId);
+        if (response && response.data.results) {
+          this.preselectedCompany = response.data.results[0];
+          this.reviewData.company = this.preselectedCompany.name;
+        }
+      } catch (error) {
+        console.error("Error fetching preselected company:", error);
+        // Fallback with logo included
+        this.preselectedCompany = {
+          id: companyId,
+          name: companyName,
+          logo: companyLogo || null,
+        };
+        this.reviewData.company = companyName;
+      }
+    }
   },
   methods: {
     handleCompanySelected(company) {
       // Store both the company ID and logo when a company is selected
       this.reviewData.verificationId = company.id;
       this.selectedCompanyLogo = company.logo || "";
-      console.log('Company selected:', company);
+      console.log("Company selected:", company);
+    },
+
+    async handleRatingChange(star) {
+      this.rating = star;
+
+      // If rating is 3 or below, fetch detailed rating categories
+      if (star <= 3) {
+        if (this.ratingCategories.length === 0) {
+          await this.fetchRatingCategories();
+        }
+        // Show detailed ratings AFTER categories are loaded
+        this.showDetailedRatings = true;
+      } else {
+        // Hide detailed ratings for ratings > 3
+        this.showDetailedRatings = false;
+        this.detailedRatingsData = {};
+      }
+    },
+
+    async fetchRatingCategories() {
+      this.isLoadingCategories = true;
+      this.errorMessage = "";
+
+      try {
+        const response = await getRatingConfig();
+
+        if (response && response.data) {
+          this.ratingCategories = response.data.results;
+          console.log("Rating categories fetched:", this.ratingCategories);
+        }
+      } catch (error) {
+        console.error("Error fetching rating categories:", error);
+        this.errorMessage = "Failed to load rating categories. Please try again.";
+
+        setTimeout(() => {
+          this.errorMessage = "";
+        }, 5000);
+      } finally {
+        this.isLoadingCategories = false;
+      }
     },
 
     async submitReview() {
+      // Debug logs
+      console.log("=== DEBUG START ===");
+      console.log("detailedRatingsData:", this.detailedRatingsData);
+      console.log("detailedRatingsData keys:", Object.keys(this.detailedRatingsData));
+      console.log("showDetailedRatings:", this.showDetailedRatings);
+      console.log("rating:", this.rating);
+      console.log("=== DEBUG END ===");
+
       // Validation
       if (this.rating === 0) {
         this.errorMessage = "Please select a rating";
@@ -150,13 +211,48 @@ export default {
         return;
       }
 
-      // Prepare payload matching API structure
+      // Prepare base payload
       const payload = {
-        description: this.reviewData.content,
-        overAllratings: this.rating.toString(),
         title: this.reviewData.title,
         verificationId: this.reviewData.verificationId,
       };
+
+      // If rating > 3, use the old API structure
+      if (this.rating > 3) {
+        payload.description = this.reviewData.content;
+        payload.overAllratings = this.rating.toString();
+      } else {
+        // If rating <= 3, use new structure with detailed ratings
+        const ratings = [];
+
+        // Extract data from detailedRatingsData
+        Object.keys(this.detailedRatingsData).forEach((categoryId) => {
+          const ratingData = this.detailedRatingsData[categoryId];
+
+          if (ratingData && ratingData.value > 0) {
+            ratings.push({
+              id: categoryId,
+              value: ratingData.value.toString(),
+              tagId: Array.isArray(ratingData.tagIds) ? [...ratingData.tagIds] : [],
+            });
+          }
+        });
+
+        console.log("Ratings array being sent:", ratings);
+
+        // Add validation to prevent empty ratings array
+        if (ratings.length === 0) {
+          this.errorMessage = "Please rate at least one category";
+          setTimeout(() => {
+            this.errorMessage = "";
+          }, 3000);
+          return;
+        }
+
+        payload.ratings = ratings;
+        payload.description = this.reviewData.content;
+        payload.overAllratings = this.rating.toString();
+      }
 
       this.isSubmitting = true;
       this.errorMessage = "";
@@ -164,18 +260,17 @@ export default {
       try {
         // Call the API
         const response = await createReview(payload);
-        
+
         console.log("Review created successfully:", response.data);
-        
+
         // Show success component
         this.submitted = true;
-
       } catch (error) {
         console.error("Error submitting review:", error);
-        
+
         // Show error message
         this.errorMessage = error.response?.data?.message || "Failed to submit review. Please try again.";
-        
+
         // Clear error after 5 seconds
         setTimeout(() => {
           this.errorMessage = "";
@@ -196,13 +291,15 @@ export default {
       this.selectedCompanyLogo = "";
       this.submitted = false;
       this.errorMessage = "";
+      this.showDetailedRatings = false;
+      this.ratingCategories = [];
+      this.detailedRatingsData = {};
     },
 
     navigateToSearch() {
       // Navigate to search reviews page
-      // Update this route based on your router setup
-      this.$router.push('/'); // or whatever your search/browse page route is
-    }
+      this.$router.push("/");
+    },
   },
 };
 </script>
@@ -302,7 +399,7 @@ body {
 
 .star-button:hover,
 .star-button.active {
-  color: #FFD700;
+  color: #ffd700;
 }
 
 .button-group {
@@ -364,7 +461,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {
@@ -409,6 +508,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

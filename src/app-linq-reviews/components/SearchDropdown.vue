@@ -1,6 +1,6 @@
 <template>
   <div class="company-search-wrapper" ref="wrapper">
-    <label  v-if ="!simpleSearch" class="form-label" for="company-search">Company *</label>
+    <label v-if="!simpleSearch" class="form-label" for="company-search">Company *</label>
     <div class="input-container">
       <img
         v-if="selectedCompany && selectedCompany.logo"
@@ -50,7 +50,7 @@
 
 <script>
 // Import your API functions - UPDATE THIS PATH!
-import { searchBusiness, getDomainMeta, createBusiness } from "../api/reviewCreate";
+import { searchBusiness, getDomainMeta, createBusiness } from "../api/businessCrud";
 
 export default {
   name: "CompanySearch",
@@ -63,6 +63,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    preselectedCompany: {
+      type: Object,
+      default: null,
+    },
   },
   data() {
     return {
@@ -74,10 +78,20 @@ export default {
       loadingMessage: "Searching...",
       noResultsMessage: "No company found.",
       searchTimeout: null,
+      isPreselected: false, // NEW: Track if company is preselected
     };
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+
+    // Set preselected company
+    if (this.preselectedCompany) {
+      this.selectedCompany = this.preselectedCompany;
+      this.searchTerm = this.preselectedCompany.name;
+      this.isPreselected = true; // NEW: Mark as preselected
+      this.$emit("input", this.preselectedCompany.name);
+      this.$emit("company-selected", this.preselectedCompany);
+    }
   },
   beforeDestroy() {
     document.removeEventListener("click", this.handleClickOutside);
@@ -87,14 +101,32 @@ export default {
   },
   watch: {
     value(newVal) {
-      this.searchTerm = newVal;
+      // NEW: Only update searchTerm if not from preselection
+      if (!this.isPreselected) {
+        this.searchTerm = newVal;
+      }
     },
     searchTerm(newVal) {
       this.$emit("input", newVal);
     },
+    // NEW: Watch for changes to preselectedCompany prop
+    preselectedCompany(newVal) {
+      if (newVal) {
+        this.selectedCompany = newVal;
+        this.searchTerm = newVal.name;
+        this.isPreselected = true;
+        this.$emit("input", newVal.name);
+        this.$emit("company-selected", newVal);
+      }
+    }
   },
   methods: {
     handleInput() {
+      // NEW: Only clear selection if user is actually typing (not preselected)
+      if (this.isPreselected) {
+        this.isPreselected = false; // User started typing, clear preselection flag
+      }
+      
       this.isOpen = true;
       this.selectedCompany = null; // Clear selected company when typing
 
@@ -116,6 +148,11 @@ export default {
     },
 
     handleFocus() {
+      // NEW: Don't open dropdown if company is already selected
+      if (this.selectedCompany) {
+        return;
+      }
+      
       if (this.searchTerm.trim()) {
         this.isOpen = true;
         if (this.companies.length === 0) {
@@ -231,23 +268,28 @@ export default {
       // If no extension, only then add .com
       return `${cleanQuery}.com`;
     },
+    
     selectCompany(company) {
       this.searchTerm = company.name;
       this.selectedCompany = company;
       this.isOpen = false;
+      this.isPreselected = false; // NEW: Clear preselection flag
       this.$emit("input", company.name);
       this.$emit("company-selected", company);
     },
+    
     handleClickOutside(event) {
       if (this.$refs.wrapper && !this.$refs.wrapper.contains(event.target)) {
         this.isOpen = false;
       }
     },
+    
     clearSelection() {
       this.searchTerm = "";
       this.selectedCompany = null;
       this.companies = [];
       this.isOpen = false;
+      this.isPreselected = false; // NEW: Clear preselection flag
       this.$emit("input", "");
       this.$emit("company-selected", null);
     },
@@ -258,7 +300,7 @@ export default {
 <style scoped>
 .company-search-wrapper {
   position: relative;
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
   width: 100%;
 }
 
