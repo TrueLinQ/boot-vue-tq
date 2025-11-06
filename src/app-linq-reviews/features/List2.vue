@@ -239,9 +239,9 @@
 </template>
 <script>
 import { Search, Loader, ArrowRight, Funnel, Edit2, Trash2 } from "lucide-vue";
-import { getReviews, getReviewsByOrganization } from "../api/reivewGet";
 import { updateReview, deleteReview } from "../api/reviewCrud";
 import CompanySearch from "../components/SearchDropdown.vue";
+import { getReviews,getReviewsByOrganization } from "../pages/reivewGet-OLD";
 
 export default {
   components: {
