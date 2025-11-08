@@ -100,13 +100,12 @@
 
 <script>
 import { getAllBusinesses } from '../api/businessCrud';
-import FullScreenLoader from "../../app-linq-work/components/Loader.vue";
 
 export default {
   name: "CompanyListings",
 
   components: {
-    FullScreenLoader,
+    // FullScreenLoader,
   },
   
   data() {
