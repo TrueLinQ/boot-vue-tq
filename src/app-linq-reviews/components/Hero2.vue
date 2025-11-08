@@ -1,9 +1,6 @@
 <template>
   <div class="compact-search-bar">
-    <CompanySearch 
-      :simple-search="true" 
-      @company-selected="handleCompanySelected" 
-    />
+    <CompanySearch :simple-search="true" @company-selected="handleCompanySelected" />
     <WriteReviewButton @click="handleWriteReview" />
   </div>
 </template>
@@ -14,19 +11,19 @@ import WriteReviewButton from './WriteReviewButton.vue';
 
 export default {
   name: "Hero2",
-  
+
   components: {
     CompanySearch,
     WriteReviewButton,
   },
-  
+
   emits: ['company-selected', 'write-review'],
-  
+
   methods: {
     handleCompanySelected(company) {
       this.$emit('company-selected', company);
     },
-    
+
     handleWriteReview() {
       this.$emit('write-review');
     },
@@ -40,9 +37,11 @@ export default {
   gap: 12px;
   align-items: center;
   width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.compact-search-bar > :first-child {
+.compact-search-bar> :first-child {
   flex: 1;
   min-width: 0;
 }
@@ -53,8 +52,8 @@ export default {
     flex-direction: column;
     gap: 10px;
   }
-  
-  .compact-search-bar > :first-child {
+
+  .compact-search-bar> :first-child {
     width: 100%;
   }
 }
