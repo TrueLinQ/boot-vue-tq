@@ -1,25 +1,15 @@
 <template>
   <div class="company-search-wrapper" ref="wrapper">
     <label v-if="!simpleSearch" class="form-label" for="company-search">Company *</label>
+    <p v-if="!simpleSearch" class="help-text">
+      It is easy to get the company name if you enter company's website URL. (for example: www.eurekaforbes.com)
+    </p>
     <div class="input-container">
-      <img
-        v-if="selectedCompany && selectedCompany.logo"
-        :src="selectedCompany.logo"
-        :alt="selectedCompany.name"
-        class="selected-logo"
-      />
-      <input
-        id="company-search"
-        v-model="searchTerm"
-        type="text"
-        class="form-input"
-        :class="{ 'has-logo': selectedCompany && selectedCompany.logo }"
-        placeholder="Search for a company..."
-        @input="handleInput"
-        @focus="handleFocus"
-        autocomplete="off"
-        required
-      />
+      <img v-if="selectedCompany && selectedCompany.logo" :src="selectedCompany.logo" :alt="selectedCompany.name"
+        class="selected-logo" />
+      <input id="company-search" v-model="searchTerm" type="text" class="form-input"
+        :class="{ 'has-logo': selectedCompany && selectedCompany.logo }" placeholder="Search for a company..."
+        @input="handleInput" @focus="handleFocus" autocomplete="off" required />
       <button v-if="selectedCompany" @click="clearSelection" class="clear-btn" type="button" title="Clear selection">
         ×
       </button>
@@ -310,6 +300,14 @@ export default {
   font-weight: 500;
   color: #333;
   margin-bottom: 0.5rem;
+}
+
+.help-text {
+  font-size: 0.813rem;
+  color: #666;
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
 }
 
 .input-container {

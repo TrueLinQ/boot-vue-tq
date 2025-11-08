@@ -62,6 +62,7 @@ export default {
 .hero-wrapper {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .home-container {
@@ -130,6 +131,10 @@ export default {
 .review-button-wrapper {
   display: flex;
   justify-content: center;
+}
+
+.home-company-listings {
+  width: 100%;
 }
 
 /* Mobile Responsive */

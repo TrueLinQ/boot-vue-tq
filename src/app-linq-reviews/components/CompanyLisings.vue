@@ -116,8 +116,8 @@ export default {
       pageSize: 12,
       startIndex: 0,
       totalCount: 0,
-      selectedSort: "ratings-desc",
-      sortBy: "ratings",
+      selectedSort: "latest-desc",
+      sortBy: "latest",
       sortOrder: 0,
     };
   },
@@ -257,6 +257,7 @@ export default {
   padding: 30px;
   margin-bottom: 30px;
    width: 100%;
+  
 }
 
 .listings-card {
