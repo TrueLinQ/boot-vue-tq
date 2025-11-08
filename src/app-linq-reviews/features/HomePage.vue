@@ -13,19 +13,19 @@
 </template>
 
 <script>
-import CompanySearch from "../components/SearchDropdown.vue";
-import WriteReviewButton from "../components/WriteReviewButton.vue";
+// import CompanySearch from "../components/SearchDropdown.vue";
+// import WriteReviewButton from "../components/WriteReviewButton.vue";
 import CompanyLisings from "../components/CompanyLisings.vue";
-import HeroSearchSection from "../components/HeroSearchSection.vue";
+// import HeroSearchSection from "../components/HeroSearchSection.vue";
 import Hero2 from "../components/Hero2.vue";
 import FullScreenLoader from "../../app-linq-work/components/Loader.vue";
 
 export default {
   components: {
-    CompanySearch,
-    WriteReviewButton,
+    // CompanySearch,
+    // WriteReviewButton,
     CompanyLisings,
-    HeroSearchSection,
+    // HeroSearchSection,
     Hero2,
     FullScreenLoader
   },

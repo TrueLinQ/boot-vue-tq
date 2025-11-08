@@ -49,30 +49,7 @@ export default {
       ratings: {},
     };
   },
-  // mounted() {
-  //   this.initializeRatings();
-  // },
-  watch: {
-    categories: {
-      immediate: true,
-      handler(newCategories) {
-        if (newCategories.length > 0 && Object.keys(this.ratings).length === 0) {
-          this.initializeRatingsWithValues();
-        }
-      },
-    },
-    value: {
-      immediate: true,
-      deep: true,
-      handler(newValue) {
-        if (Object.keys(newValue).length > 0) {
-          this.ratings = JSON.parse(JSON.stringify(newValue));
-        }
-      },
-    },
-  },
 
-  // REPLACE WITH THIS:
   watch: {
     categories: {
       immediate: true,
