@@ -53,7 +53,7 @@ export default {
     gap: 10px;
   }
 
-  .compact-search-bar> :first-child {
+  .compact-search-bar * {
     width: 100%;
   }
 }
