@@ -116,7 +116,7 @@ export default {
       if (this.isPreselected) {
         this.isPreselected = false; // User started typing, clear preselection flag
       }
-      
+
       this.isOpen = true;
       this.selectedCompany = null; // Clear selected company when typing
 
@@ -142,7 +142,7 @@ export default {
       if (this.selectedCompany) {
         return;
       }
-      
+
       if (this.searchTerm.trim()) {
         this.isOpen = true;
         if (this.companies.length === 0) {
@@ -224,6 +224,7 @@ export default {
           logo: metaData.picture,
           website: metaData.website,
           description: metaData.businessDescription,
+          socialMediaUrls : metaData.socialMediaUrls
         };
 
         const createResponse = await createBusiness(businessData);
@@ -258,7 +259,7 @@ export default {
       // If no extension, only then add .com
       return `${cleanQuery}.com`;
     },
-    
+
     selectCompany(company) {
       this.searchTerm = company.name;
       this.selectedCompany = company;
@@ -267,13 +268,13 @@ export default {
       this.$emit("input", company.name);
       this.$emit("company-selected", company);
     },
-    
+
     handleClickOutside(event) {
       if (this.$refs.wrapper && !this.$refs.wrapper.contains(event.target)) {
         this.isOpen = false;
       }
     },
-    
+
     clearSelection() {
       this.searchTerm = "";
       this.selectedCompany = null;
@@ -442,6 +443,7 @@ export default {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

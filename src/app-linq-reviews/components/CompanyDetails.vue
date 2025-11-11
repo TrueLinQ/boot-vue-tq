@@ -17,7 +17,7 @@
           <!-- Company Info -->
           <div class="company-info">
             <h1 class="company-name">{{ company.name }}</h1>
-            
+
             <!-- Rating Section -->
             <div class="rating-section">
               <div class="rating-display">
@@ -27,8 +27,17 @@
                   </span>
                 </div>
                 <span class="rating-value">{{ formatRating(company.overAllRating) }}</span>
-                <span class="rating-count">({{ company.ratingCount || 0 }} {{ company.ratingCount == 1 ? 'review' : 'reviews' }})</span>
+                <span class="rating-count">({{ company.ratingCount || 0 }} {{ company.ratingCount == 1 ? 'review' :
+                  'reviews' }})</span>
               </div>
+            </div>
+
+            <!-- Social Media Links -->
+            <div v-if="hasSocialMedia" class="social-media-section">
+              <a v-for="social in socialMediaLinks" :key="social.platform" :href="social.url" target="_blank"
+                rel="noopener noreferrer" class="social-link" :aria-label="social.platform">
+                <i :class="social.icon"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -65,6 +74,16 @@ export default {
       company: null,
       loading: false,
       error: null,
+      socialIconMap: {
+        facebook: 'fa-brands fa-facebook-f',
+        twitter: 'fa-brands fa-x-twitter',
+        instagram: 'fa-brands fa-instagram',
+        linkedin: 'fa-brands fa-linkedin-in',
+        youtube: 'fa-brands fa-youtube',
+        tiktok: 'fa-brands fa-tiktok',
+        pinterest: 'fa-brands fa-pinterest-p',
+      },
+
     };
   },
   mounted() {
@@ -73,6 +92,27 @@ export default {
   watch: {
     organizationId() {
       this.fetchCompanyData();
+    },
+  },
+  computed: {
+    hasSocialMedia() {
+      return this.company?.socialMediaUrl && Object.keys(this.company.socialMediaUrl).length > 0;
+    },
+    socialMediaLinks() {
+      if (!this.company?.socialMediaUrl) return [];
+
+      console.log("Social Media URL from API:", this.company.socialMediaUrl);
+
+      const links = Object.entries(this.company.socialMediaUrl)
+        .filter(([platform, url]) => url && this.socialIconMap[platform])
+        .map(([platform, url]) => ({
+          platform,
+          url,
+          icon: this.socialIconMap[platform],
+        }));
+
+      console.log("Processed social links:", links);
+      return links;
     },
   },
   methods: {
@@ -136,6 +176,7 @@ export default {
 </script>
 
 <style scoped>
+
 .loading-container,
 .error-container {
   display: flex;
@@ -284,6 +325,39 @@ export default {
   color: #666;
 }
 
+.social-media-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #666;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.social-link:hover {
+  background: #f0f0f0;
+  color: #000;
+  border-color: #ccc;
+  transform: translateY(-2px);
+}
+
+.social-link:active {
+  transform: translateY(0);
+}
+
 @media (max-width: 768px) {
   .company-details-card {
     padding: 32px 24px;
@@ -317,6 +391,16 @@ export default {
 
   .rating-display {
     flex-wrap: wrap;
+  }
+
+  .social-media-section {
+    gap: 10px;
+  }
+
+  .social-link {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
   }
 }
 
@@ -353,6 +437,16 @@ export default {
 
   .rating-count {
     font-size: 0.8rem;
+  }
+
+  .social-media-section {
+    gap: 8px;
+  }
+
+  .social-link {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }
 </style>
