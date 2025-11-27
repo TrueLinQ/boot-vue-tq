@@ -9,7 +9,8 @@
         <div class="company-header">
           <!-- Company Logo -->
           <div class="company-logo-container">
-            <img v-if="company.logo" :src="company.logo" :alt="company.name" class="company-logo" />
+            <img v-if="company.logo && !imageLoadError" :src="company.logo" :alt="company.name" class="company-logo"
+              @error="handleImageError" />
             <div v-else class="company-logo-placeholder">
               {{ getInitials(company.name) }}
             </div>
@@ -74,6 +75,7 @@ export default {
       company: null,
       loading: false,
       error: null,
+      imageLoadError: false,
       socialIconMap: {
         facebook: 'fa-brands fa-facebook-f',
         twitter: 'fa-brands fa-x-twitter',
@@ -83,7 +85,6 @@ export default {
         tiktok: 'fa-brands fa-tiktok',
         pinterest: 'fa-brands fa-pinterest-p',
       },
-
     };
   },
   mounted() {
@@ -121,6 +122,7 @@ export default {
 
       this.loading = true;
       this.error = null;
+      this.imageLoadError = false;
 
       try {
         const response = await getBusinessById(this.organizationId);
@@ -161,6 +163,9 @@ export default {
       }
       return 'empty';
     },
+    handleImageError() {
+      this.imageLoadError = true;
+    },
     writeReview() {
       this.$router.push({
         path: "/create",
@@ -176,7 +181,6 @@ export default {
 </script>
 
 <style scoped>
-
 .loading-container,
 .error-container {
   display: flex;
