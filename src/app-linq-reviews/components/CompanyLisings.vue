@@ -8,14 +8,10 @@
             <h2>Browse Companies</h2>
             <p>Discover and explore businesses</p>
           </div>
-          
+
           <!-- Sort Dropdown -->
           <div class="sort-dropdown">
-            <select 
-              v-model="selectedSort" 
-              @change="handleSortChange"
-              class="sort-select"
-            >
+            <select v-model="selectedSort" @change="handleSortChange" class="sort-select">
               <option value="latest-desc">Latest</option>
               <option value="ratings-desc">Highest Rated</option>
               <option value="ratings-asc">Lowest Rated</option>
@@ -39,38 +35,29 @@
 
       <!-- Companies Grid -->
       <div v-if="!loading || companies.length > 0" class="companies-grid">
-        <div 
-          v-for="company in companies" 
-          :key="company.id"
-          class="company-card"
-          @click="navigateToCompany(company.id)"
-        >
+        <div v-for="company in companies" :key="company.id" class="company-card" @click="navigateToCompany(company.id)">
           <div class="company-logo">
-            <img 
-              v-if="company.logo" 
-              :src="company.logo" 
-              :alt="company.name"
-              @error="handleImageError"
-            />
+            <img v-if="company.logo && !imageErrors[company.id]" :src="company.logo" :alt="company.name"
+              @error="handleImageError(company.id, company.name)" />
             <div v-else class="logo-placeholder">
               {{ getInitials(company.name) }}
             </div>
           </div>
-          
+
           <div class="company-info">
             <h3 class="company-name">{{ company.name }}</h3>
-            
+
             <div class="company-meta">
               <div v-if="company.overAllRating" class="rating">
                 <span class="star">★</span>
                 <span class="rating-value">{{ company.overAllRating }}</span>
               </div>
-              
+
               <div v-if="company.claimed" class="claimed-badge">
                 Claimed
               </div>
             </div>
-            
+
             <div v-if="company.category" class="company-category">
               {{ company.category }}
             </div>
@@ -85,11 +72,7 @@
 
       <!-- Load More Button -->
       <div v-if="canLoadMore" class="load-more-container">
-        <button 
-          @click="loadMore" 
-          :disabled="loading"
-          class="btn btn-secondary load-more-btn"
-        >
+        <button @click="loadMore" :disabled="loading" class="btn btn-secondary load-more-btn">
           <template v-if="loading">Loading...</template>
           <template v-else>Load More</template>
         </button>
@@ -107,7 +90,7 @@ export default {
   components: {
     // FullScreenLoader,
   },
-  
+
   data() {
     return {
       companies: [],
@@ -119,27 +102,29 @@ export default {
       selectedSort: "latest-desc",
       sortBy: "latest",
       sortOrder: 0,
+      imageErrors: {},
     };
   },
-  
+
   computed: {
     canLoadMore() {
       return this.companies.length < this.totalCount && this.totalCount > 0;
     },
   },
-  
+
   methods: {
     handleSortChange() {
       const [sortBy, sortOrder] = this.selectedSort.split('-');
       this.sortBy = sortBy;
       this.sortOrder = sortOrder === 'asc' ? 1 : 0;
-      
+
       this.startIndex = 0;
       this.companies = [];
       this.totalCount = 0;
+      this.imageErrors = {};
       this.loadCompanies(false);
     },
-    
+
     async loadCompanies(loadMore = false) {
       this.loading = true;
       this.error = null;
@@ -150,6 +135,7 @@ export default {
         currentStartIndex = 0;
         this.companies = [];
         this.totalCount = 0;
+        this.imageErrors = {};
       } else {
         currentStartIndex = this.startIndex;
       }
@@ -208,19 +194,18 @@ export default {
         }
       } finally {
         this.loading = false;
-          this.$emit("loading-change", false); // This correctly sets loading to false
-
+        this.$emit("loading-change", false);
       }
     },
-    
+
     loadMore() {
       this.loadCompanies(true);
     },
-    
+
     navigateToCompany(companyId) {
       this.$router.push(`/company/${companyId}`);
     },
-    
+
     getInitials(name) {
       if (!name) return '?';
       return name
@@ -230,20 +215,14 @@ export default {
         .toUpperCase()
         .substring(0, 2);
     },
-    
-    handleImageError(event) {
-      event.target.style.display = 'none';
-      event.target.parentElement.innerHTML = `
-        <div class="logo-placeholder">
-          ${this.getInitials(event.target.alt)}
-        </div>
-      `;
+
+    handleImageError(companyId, companyName) {
+      this.$set(this.imageErrors, companyId, true);
     },
   },
-  
-  mounted() {
-        this.$emit("loading-change", true); 
 
+  mounted() {
+    this.$emit("loading-change", true);
     this.loadCompanies(false);
   },
 };
@@ -256,8 +235,8 @@ export default {
   border-radius: 16px;
   padding: 30px;
   margin-bottom: 30px;
-   width: 100%;
-  
+  width: 100%;
+
 }
 
 .listings-card {
@@ -366,8 +345,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; */
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  color: #666;
   font-weight: 600;
   font-size: 1.25rem;
 }
@@ -522,7 +504,7 @@ export default {
   }
 
   .companies-grid {
-    grid-template-columns: repeat(2,1fr)
+    grid-template-columns: repeat(2, 1fr)
   }
 
   .header {
@@ -538,6 +520,7 @@ export default {
   .companies-grid {
     grid-template-columns: 1fr;
   }
+
   .header h2 {
     font-size: 1.35rem;
   }
