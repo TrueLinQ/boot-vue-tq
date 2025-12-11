@@ -1,6 +1,7 @@
 <template>
   <div class="app">
     <AuthLayout app="reviews" />
+    <portal-target name="modal-destination"></portal-target>
     <!-- <router-view></router-view> -->
   </div>
 </template>

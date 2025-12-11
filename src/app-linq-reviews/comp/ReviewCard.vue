@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <!-- ADD THIS: Detailed Ratings Toggle Button -->
+    <!-- Detailed Ratings Toggle Button -->
     <div v-if="!isEditing && hasDetailedRatings && review.overAllRating <= 3" class="detailed-ratings-toggle">
       <button @click="showDetailedRatings = !showDetailedRatings" class="toggle-btn">
         <span>{{ showDetailedRatings ? "Hide" : "View" }} Detailed Ratings</span>
@@ -30,7 +30,7 @@
       </button>
     </div>
 
-    <!-- ADD THIS: Detailed Ratings Component (collapsible) -->
+    <!-- Detailed Ratings Component (collapsible) -->
     <transition name="slide-fade">
       <DetailedRatingsDisplay v-if="!isEditing && showDetailedRatings && hasDetailedRatings"
         :ratings="review.ratings" />
@@ -46,7 +46,7 @@
         <p class="description" :class="{ expanded: isExpanded }">
           {{ review.description }}
         </p>
-        <button v-if="review.description && review.description.length > 150" @click="toggleExpansion"
+        <button v-if="review.description && review.description.length > 100" @click="toggleExpansion"
           class="see-more-btn">
           {{ isExpanded ? "See Less" : "See More" }}
         </button>
@@ -81,15 +81,24 @@
       </template>
     </div>
 
-    <!-- Helpful Section -->
-    <div class="helpful-section" v-if="!isEditing && !canEdit">
-      <span class="helpful-label">Helpful?</span>
-      <button @click="handleReaction" :disabled="isReacting" class="helpful-btn"
-        :class="{ active: review.reactedByUser }">
-        <ThumbsUp :size="16" />
-        <span v-if="review.helpfulCount && review.helpfulCount > 0" class="helpful-count">
-          {{ review.helpfulCount }}
-        </span>
+    <!-- Action Buttons Row (Helpful + Comments) -->
+    <div class="card-footer-actions" v-if="!isEditing && !canEdit">
+      <!-- Helpful Section -->
+      <div class="helpful-section">
+        <span class="helpful-label">Helpful?</span>
+        <button @click="handleReaction" :disabled="isReacting" class="helpful-btn"
+          :class="{ active: review.reactedByUser }">
+          <ThumbsUp :size="16" />
+          <span v-if="review.helpfulCount && review.helpfulCount > 0" class="helpful-count">
+            {{ review.helpfulCount }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Comments Button -->
+      <button @click="openComments" class="comments-btn">
+        <MessageCircle :size="16" />
+        <span v-if="commentCount > 0" class="comments-count">{{ commentCount }}</span>
       </button>
     </div>
 
@@ -102,14 +111,20 @@
         <Trash2 :size="16" />
       </button>
     </div>
+
+    <!-- Comments Modal -->
+    <transition name="slide-fade">
+      <ReviewComment v-if="showComments" :review-id="review.id" @comment-added="handleCommentAdded"
+        @comment-deleted="handleCommentDeleted" />
+    </transition>
   </div>
 </template>
 
 <script>
-import { Edit2, Trash2, Loader, ThumbsUp } from "lucide-vue";
+import { Edit2, Trash2, Loader, ThumbsUp, MessageCircle } from "lucide-vue";
 import DetailedRatingsDisplay from "../components/DetailedRatingsDisplay.vue";
-
 import DetailedRatings from "../components/DetailedRatings.vue";
+import ReviewComment from "./ReviewComment.vue";
 import { getRatingConfig } from "../api/reviewCrud";
 
 export default {
@@ -119,9 +134,10 @@ export default {
     Trash2,
     Loader,
     ThumbsUp,
-    DetailedRatingsDisplay, // ADD THIS
-    DetailedRatings // ADD THIS
-
+    MessageCircle,
+    DetailedRatingsDisplay,
+    DetailedRatings,
+    ReviewComment
   },
   props: {
     review: {
@@ -143,10 +159,11 @@ export default {
       isExpanded: false,
       isEditing: false,
       isReacting: false,
-      showDetailedRatings: false, // ADD THIS
-      isLoadingRatingConfig: false, // ADD
-      ratingCategories: [], // ADD - to store getRatingConfig results
-
+      showDetailedRatings: false,
+      isLoadingRatingConfig: false,
+      ratingCategories: [],
+      showComments: false, // Changed from showCommentsModal
+      commentCount: this.review.commentCount || 0, 
       editData: {
         rating: 0,
         title: "",
@@ -158,6 +175,22 @@ export default {
   methods: {
     toggleExpansion() {
       this.isExpanded = !this.isExpanded;
+    },
+
+    openComments() {
+      this.showComments = !this.showComments; // Toggle instead of opening modal
+    },
+
+    closeComments() {
+      this.showComments = false;
+    },
+
+    handleCommentAdded() {
+      this.commentCount += 1;
+    },
+
+    handleCommentDeleted() {
+      this.commentCount = Math.max(0, this.commentCount - 1);
     },
 
     async handleReaction() {
@@ -172,11 +205,11 @@ export default {
         this.isReacting = false;
       }
     },
+
     async startEdit() {
       this.isEditing = true;
       this.isLoadingRatingConfig = true;
 
-      // Set basic edit data
       this.editData = {
         rating: this.review.overAllRating || 0,
         title: this.review.title || "",
@@ -185,13 +218,11 @@ export default {
       };
 
       try {
-        // Fetch rating config to get all available categories and tags
         const response = await getRatingConfig(this.$parent.organizationId);
 
         if (response && response.data && response.data.results) {
           this.ratingCategories = response.data.results;
 
-          // Pre-fill existing ratings if they exist
           if (this.review.ratings && this.review.ratings.length > 0) {
             const prefilledRatings = {};
 
@@ -204,7 +235,6 @@ export default {
 
             this.editData.detailedRatings = prefilledRatings;
           } else {
-            // Initialize empty ratings for all categories
             const initialRatings = {};
             this.ratingCategories.forEach((cat) => {
               initialRatings[cat.id] = {
@@ -238,20 +268,17 @@ export default {
     async saveEdit() {
       if (this.isUpdating) return;
 
-      // Validate overall rating
       if (!this.editData.rating || this.editData.rating < 1 || this.editData.rating > 5) {
         alert("Please provide a rating between 1 and 5 stars");
         return;
       }
 
-      // Validate description
       if (!this.editData.description || this.editData.description.trim().length === 0) {
         alert("Please write a review description");
         return;
       }
 
       try {
-        // Transform detailedRatings to API format
         const ratingsArray = Object.keys(this.editData.detailedRatings)
           .map((categoryId) => {
             const rating = this.editData.detailedRatings[categoryId];
@@ -267,7 +294,6 @@ export default {
           })
           .filter((r) => r !== null);
 
-        // Prepare update payload
         const updatePayload = {
           overAllratings: this.editData.rating,
           title: this.editData.title,
@@ -278,18 +304,14 @@ export default {
           updatePayload.ratings = ratingsArray;
         }
 
-        // Emit the update event - WAIT for it to complete
         await this.$emit("update", this.review.id, updatePayload);
-
-        // DON'T exit edit mode here - let the parent handle it
-        // The parent will control when to close edit mode
 
       } catch (error) {
         console.error("Failed to save edit:", error);
         alert("Failed to update review. Please try again.");
       }
-      // DON'T reset edit data or exit edit mode here
     },
+
     getInitials(name) {
       if (!name) return "?";
       return name
@@ -470,6 +492,16 @@ export default {
   color: #333;
 }
 
+/* Card Footer Actions (Helpful + Comments) */
+.card-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
 .helpful-section {
   display: flex;
   align-items: center;
@@ -502,13 +534,6 @@ export default {
   border-color: #d4ecd4;
 }
 
-/* 
-.helpful-btn.active {
-  background: #2d7d2d;
-  border-color: #2d7d2d;
-  color: #fff;
-} */
-
 .helpful-btn:disabled {
   cursor: not-allowed;
   opacity: 0.6;
@@ -517,6 +542,33 @@ export default {
 .helpful-count {
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+/* Comments Button */
+.comments-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.comments-btn:hover {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+.comments-count {
+  min-width: 16px;
+  text-align: center;
 }
 
 .inline-edit-rating {
@@ -673,12 +725,9 @@ export default {
   justify-content: space-between;
   width: 100%;
   padding: 8px 12px;
-
-
   background: #fafafa;
   border-radius: 8px;
   border: 1px solid #f0f0f0;
-  border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 500;
   color: #333;
@@ -732,6 +781,20 @@ export default {
 @media (max-width: 480px) {
   .review-card {
     padding: 16px;
+  }
+
+  .card-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .helpful-section {
+    justify-content: space-between;
+  }
+
+  .comments-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

@@ -8,6 +8,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js';
 import { BootLoader } from "./@common";
 import appConfig from "./app.config.js";
+import PortalVue from 'portal-vue'
 
 import './tailwind.css';
 
@@ -15,6 +16,9 @@ import './tailwind.css';
 Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons)
+
+Vue.use(PortalVue)
+
 
 console.log("AppConfig", appConfig);
 

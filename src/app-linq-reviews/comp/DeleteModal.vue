@@ -1,46 +1,50 @@
 <template>
-  <!-- <teleport to="body"> -->
-    <div v-if="show" class="modal-overlay" @click.self="$emit('cancel')">
-      <div class="review-modal" @click.stop>
-        <div class="modal-header">
-          <h3>Delete Review</h3>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure you want to delete this review? This action cannot be undone.</p>
-        </div>
-        <div class="modal-actions">
-          <button @click="$emit('cancel')" class="btn btn-secondary" :disabled="isDeleting">Cancel</button>
-          <button @click="$emit('confirm')" class="btn btn-danger" :disabled="isDeleting">
-            <Loader v-if="isDeleting" class="loader-icon" :size="14" />
-            <span>{{ isDeleting ? "Deleting..." : "Delete" }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  <!-- </teleport> -->
-</template>
-
-<script>
-import { Loader } from "lucide-vue";
-
-export default {
-  name: "DeleteModal",
-  components: {
-    Loader,
-  },
-  props: {
-    show: {
-      type: Boolean,
-      default: false,
-    },
-    isDeleting: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ["confirm", "cancel"],
-};
-</script>
+  <portal to="modal-destination">
+     <div v-if="show" class="modal-overlay" @click.self="$emit('cancel')">
+       <div class="review-modal" @click.stop>
+         <div class="modal-header">
+           <h3>Delete {{ itemType }}</h3>
+         </div>
+         <div class="modal-body">
+           <p>Are you sure you want to delete this {{ itemType.toLowerCase() }}? This action cannot be undone.</p>
+         </div>
+         <div class="modal-actions">
+           <button @click="$emit('cancel')" class="btn btn-secondary" :disabled="isDeleting">Cancel</button>
+           <button @click="$emit('confirm')" class="btn btn-danger" :disabled="isDeleting">
+             <Loader v-if="isDeleting" class="loader-icon" :size="14" />
+             <span>{{ isDeleting ? "Deleting..." : "Delete" }}</span>
+           </button>
+         </div>
+       </div>
+     </div>
+   </portal>
+ </template>
+ 
+ <script>
+ import { Loader } from "lucide-vue";
+ 
+ export default {
+   name: "DeleteModal",
+   components: {
+     Loader,
+   },
+   props: {
+     show: {
+       type: Boolean,
+       default: false,
+     },
+     isDeleting: {
+       type: Boolean,
+       default: false,
+     },
+     itemType: {
+       type: String,
+       default: "Review", // Default value
+     },
+   },
+   emits: ["confirm", "cancel"],
+ };
+ </script>
 
 <style scoped>
 .modal-overlay {
