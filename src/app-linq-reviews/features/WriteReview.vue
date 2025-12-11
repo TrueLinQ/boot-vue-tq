@@ -43,10 +43,23 @@
                 placeholder="Summarize your review" required />
             </div>
 
+            <div class="form-group form-field-slide" style="animation-delay: 0.25s">
+              <label class="form-label" for="productUrl">Product / Service URL</label>
+              <input id="productUrl" v-model="reviewData.productUrl" type="url" class="form-input"
+                placeholder="https://example.com/product" />
+            </div>
+
             <div class="form-group form-field-slide" style="animation-delay: 0.3s">
               <label class="form-label" for="review">Your Review</label>
               <textarea id="review" v-model="reviewData.content" class="form-textarea"
                 placeholder="Share your experience..." required></textarea>
+            </div>
+
+            <div class="form-group form-field-slide" style="animation-delay: 0.45s">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="reviewData.registerComplaint" class="form-checkbox" />
+                <span>I want to move forward legally with this company</span>
+              </label>
             </div>
 
             <!-- Detailed Ratings Component - shown only for ratings <= 3 -->
@@ -92,6 +105,8 @@ export default {
         title: "",
         content: "",
         verificationId: "",
+        productUrl: "",
+        registerComplaint: false
       },
       selectedCompanyLogo: "",
       preselectedCompany: null,
@@ -221,6 +236,8 @@ export default {
       if (this.rating > 3) {
         payload.description = this.reviewData.content;
         payload.overAllratings = this.rating.toString();
+        payload.productUrl = this.reviewData.productUrl;
+        payload.registerComplaint = this.reviewData.registerComplaint;
       } else {
         // If rating <= 3, use new structure with detailed ratings
         const ratings = [];
@@ -252,6 +269,8 @@ export default {
         payload.ratings = ratings;
         payload.description = this.reviewData.content;
         payload.overAllratings = this.rating.toString();
+        payload.productUrl = this.reviewData.productUrl;
+        payload.registerComplaint = this.reviewData.registerComplaint;
       }
 
       this.isSubmitting = true;
@@ -287,6 +306,8 @@ export default {
         title: "",
         content: "",
         verificationId: "",
+        productUrl: "",
+        registerComplaint: false
       };
       this.selectedCompanyLogo = "";
       this.submitted = false;
@@ -501,6 +522,68 @@ body {
   animation: slideUpFade 0.5s ease-out forwards;
   opacity: 0;
   transform: translateY(20px);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.form-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  margin-top: 0.125rem;
+}
+
+.form-checkbox:hover {
+  border-color: #000;
+}
+
+.form-checkbox:checked {
+  background: #000;
+  border-color: #000;
+}
+
+.form-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.checkbox-label span {
+  line-height: 1.5;
+  user-select: none;
 }
 
 @keyframes slideUpFade {
