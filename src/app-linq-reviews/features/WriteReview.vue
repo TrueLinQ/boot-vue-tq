@@ -237,7 +237,7 @@ export default {
         payload.description = this.reviewData.content;
         payload.overAllratings = this.rating.toString();
         payload.productUrl = this.reviewData.productUrl;
-        payload.registerComplaint = this.reviewData.registerComplaint;
+        payload.registerCompaint = this.reviewData.registerComplaint;
       } else {
         // If rating <= 3, use new structure with detailed ratings
         const ratings = [];
@@ -270,7 +270,7 @@ export default {
         payload.description = this.reviewData.content;
         payload.overAllratings = this.rating.toString();
         payload.productUrl = this.reviewData.productUrl;
-        payload.registerComplaint = this.reviewData.registerComplaint;
+        payload.registerCompaint = this.reviewData.registerComplaint;
       }
 
       this.isSubmitting = true;
