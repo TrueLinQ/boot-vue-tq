@@ -18,6 +18,14 @@
       </div>
     </div>
 
+    <!-- Product URL -->
+    <a v-if="review.productUrl && !isEditing" :href="formatProductUrl(review.productUrl)" target="_blank"
+      rel="noopener noreferrer" class="product-link">
+      <span>View Product</span>
+      <ExternalLink :size="14" />
+
+    </a>
+
     <!-- Detailed Ratings Toggle Button -->
     <div v-if="!isEditing && hasDetailedRatings && review.overAllRating <= 3" class="detailed-ratings-toggle">
       <button @click="showDetailedRatings = !showDetailedRatings" class="toggle-btn">
@@ -121,7 +129,7 @@
 </template>
 
 <script>
-import { Edit2, Trash2, Loader, ThumbsUp, MessageCircle } from "lucide-vue";
+import { Edit2, Trash2, Loader, ThumbsUp, MessageCircle, ExternalLink } from "lucide-vue";
 import DetailedRatingsDisplay from "../components/DetailedRatingsDisplay.vue";
 import DetailedRatings from "../components/DetailedRatings.vue";
 import ReviewComment from "./ReviewComment.vue";
@@ -135,6 +143,7 @@ export default {
     Loader,
     ThumbsUp,
     MessageCircle,
+    ExternalLink,
     DetailedRatingsDisplay,
     DetailedRatings,
     ReviewComment
@@ -163,7 +172,7 @@ export default {
       isLoadingRatingConfig: false,
       ratingCategories: [],
       showComments: false, // Changed from showCommentsModal
-      commentCount: this.review.commentCount || 0, 
+      commentCount: this.review.commentCount || 0,
       editData: {
         rating: 0,
         title: "",
@@ -173,6 +182,11 @@ export default {
     };
   },
   methods: {
+
+    formatProductUrl(url) {
+      if (!url) return '#';
+      return url.startsWith('http') ? url : `https://${url}`;
+    },
     toggleExpansion() {
       this.isExpanded = !this.isExpanded;
     },
@@ -796,5 +810,29 @@ export default {
     width: 100%;
     justify-content: center;
   }
+}
+
+
+.product-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.product-link:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
 }
 </style>

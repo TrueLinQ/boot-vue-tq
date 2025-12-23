@@ -45,7 +45,7 @@
 
             <div class="form-group form-field-slide" style="animation-delay: 0.25s">
               <label class="form-label" for="productUrl">Product / Service URL</label>
-              <input id="productUrl" v-model="reviewData.productUrl" type="url" class="form-input"
+              <input id="productUrl" v-model="reviewData.productUrl" type="text" class="form-input"
                 placeholder="https://example.com/product" />
             </div>
 
